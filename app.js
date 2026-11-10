@@ -82,6 +82,7 @@ function drawNav() {
 }
 
 function go(id) {
+  if (id === "journal" && current !== "journal") { S.ui.jday = null; S.ui.jpick = false; }
   current = id;
   S.ui.page = id; save();
   drawNav();
@@ -365,7 +366,7 @@ VIEWS.today = (el) => {
 
   // Journal
   const j = S.journal[dayKey()];
-  const jc = h(`<div class="card" style="--tone:var(--blush)"><h2><span class="nav-dot" style="background:var(--blush)"></span>Journal</h2></div>`);
+  const jc = h(`<div class="card" style="--tone:var(--blush)"><h2><span class="nav-dot" style="background:var(--blush)"></span>Journal ${feelingOf(j)}</h2></div>`);
   jc.appendChild(j && j.text
     ? emptyLink(j.text.slice(0, 120) + (j.text.length > 120 ? "…" : ""), "Keep writing", "journal")
     : emptyLink("How are you today?", "Write", "journal"));
@@ -593,47 +594,75 @@ VIEWS.goals = (el) => {
   el.appendChild(st);
 };
 
-const MOODS = [
-  ["Great", "var(--mint)"], ["Good", "var(--sky)"], ["Okay", "var(--butter)"], ["Low", "var(--peach)"], ["Rough", "var(--rose)"],
+/* Journal: each day starts with her picking an emoji for how she feels (her ask,
+   2026-11-10), then the writing box opens. Click the big emoji later to change it. */
+const FEELINGS = [
+  ["🥰", "Loved"], ["😊", "Happy"], ["🤩", "Excited"], ["😌", "Calm"], ["🙂", "Fine"],
+  ["😐", "Meh"], ["🥱", "Tired"], ["😴", "Sleepy"], ["😔", "Low"], ["😢", "Sad"],
+  ["😣", "Stressed"], ["😤", "Grumpy"], ["🤒", "Unwell"], ["🌸", "Peaceful"], ["🍄", "Cosy"],
 ];
+const OLD_MOOD_EMOJI = { Great: "🤩", Good: "😊", Okay: "🙂", Low: "😔", Rough: "😣" };
+const feelingOf = (e) => (e && (e.emoji || OLD_MOOD_EMOJI[e.mood])) || "";
+
 VIEWS.journal = (el) => {
   const today = dayKey();
   const k = S.ui.jday || today;
   const wrap = h(`<div class="split"></div>`);
   const side = h(`<div class="side-list"></div>`);
-  const keys = Object.keys(S.journal).filter((d) => (S.journal[d].text || "").trim() || S.journal[d].mood);
+  const keys = Object.keys(S.journal).filter((d) => (S.journal[d].text || "").trim() || feelingOf(S.journal[d]));
   if (!keys.includes(today)) keys.push(today);
   keys.sort().reverse().forEach((d) => {
     const e = S.journal[d] || {};
-    const mood = MOODS.find((m) => m[0] === e.mood);
-    const r = h(`<button data-key="jday-${d}" class="side-row ${d === k ? "on" : ""}"><b>${mood ? `<i style="display:inline-block;width:10px;height:10px;border-radius:50%;background:${mood[1]};margin-right:6px"></i>` : ""}${d === today ? "Today" : fmtDay(d)}</b><span>${esc((e.text || "").split("\n")[0] || "Nothing written yet")}</span></button>`);
-    r.addEventListener("click", () => { S.ui.jday = d; refresh(); });
+    const f = feelingOf(e);
+    const r = h(`<button data-key="jday-${d}" class="side-row ${d === k ? "on" : ""}"><b>${f ? `<span class="j-emoji-small">${f}</span>` : ""}${d === today ? "Today" : fmtDay(d)}</b><span>${esc((e.text || "").split("\n")[0] || "Nothing written yet")}</span></button>`);
+    r.addEventListener("click", () => { S.ui.jday = d; S.ui.jpick = false; refresh(); });
     side.appendChild(r);
   });
   wrap.appendChild(side);
 
-  const entry = S.journal[k] || { text: "", mood: "" };
-  const ed = h(`<div class="card editor">
-      <div class="row" style="justify-content:space-between"><b style="font-size:1.2rem">${fmtDay(k, { weekday: "long", day: "numeric", month: "long" })}</b><span class="saved"></span></div>
-      <div class="moods"></div>
-      <textarea class="body-in" placeholder="How was your day?"></textarea>
-    </div>`);
-  MOODS.forEach(([name, color]) => {
-    const b = h(`<button data-key="mood-${name}" class="chip mood ${entry.mood === name ? "on" : ""}"><i style="background:${color}"></i>${name}</button>`);
-    b.addEventListener("click", () => {
-      entry.mood = entry.mood === name ? "" : name;
-      S.journal[k] = entry;
-      ed.querySelectorAll(".mood").forEach((x) => x.classList.toggle("on", x === b && !!entry.mood));
-      save();
+  const entry = S.journal[k] || { text: "" };
+  const feeling = feelingOf(entry);
+  const picking = !feeling || S.ui.jpick;
+  const date = fmtDay(k, { weekday: "long", day: "numeric", month: "long" });
+
+  if (picking) {
+    // Big squishy emoji to choose from — right on the page, never a pop-up.
+    const pick = h(`<div class="card feel-pick">
+        <div class="muted">${date}</div>
+        <h2 class="feel-q">How are you feeling${k === today ? " right now" : ""}?</h2>
+        <div class="feel-grid"></div>
+        ${feeling ? '<button class="link" data-keep>Keep ' + feeling + "</button>" : ""}
+      </div>`);
+    FEELINGS.forEach(([emo, word]) => {
+      const b = h(`<button class="feel" data-key="feel-${word}" title="${word}"><span>${emo}</span><small>${word}</small></button>`);
+      b.addEventListener("click", () => {
+        entry.emoji = emo; delete entry.mood;
+        S.journal[k] = entry; S.ui.jpick = false;
+        setTimeout(() => { refresh(); setTimeout(() => { const t = $(".body-in"); if (t) t.focus(); }, 30); }, 260); // let it boing first
+      });
+      $(".feel-grid", pick).appendChild(b);
     });
-    $(".moods", ed).appendChild(b);
-  });
+    const keep = $("[data-keep]", pick);
+    if (keep) keep.addEventListener("click", () => { S.ui.jpick = false; refresh(); });
+    wrap.appendChild(pick);
+    el.appendChild(wrap);
+    return;
+  }
+
+  const ed = h(`<div class="card editor">
+      <div class="row j-head">
+        <button class="j-emoji" title="Change how you feel">${feeling}</button>
+        <div style="flex:1"><b style="font-size:1.2rem">${date}</b><div class="muted small">${esc((FEELINGS.find((f) => f[0] === feeling) || ["", ""])[1])}</div></div>
+        <span class="saved"></span>
+      </div>
+      <textarea class="body-in" placeholder="Write about your day…"></textarea>
+    </div>`);
+  $(".j-emoji", ed).addEventListener("click", () => { S.ui.jpick = true; setTimeout(refresh, 200); });
   const body = $(".body-in", ed);
-  body.value = entry.text;
+  body.value = entry.text || "";
   body.addEventListener("input", () => { entry.text = body.value; S.journal[k] = entry; save(); $(".saved", ed).textContent = "Saved"; });
   wrap.appendChild(ed);
   el.appendChild(wrap);
-  setTimeout(() => { if (k === today && !entry.text) body.focus(); }, 0);
 };
 
 /* ---------------- Ask for a change ----------------
@@ -734,7 +763,7 @@ if ("serviceWorker" in navigator && location.protocol !== "file:") {
    already moving, so repeated clicks blend smoothly. Soft rings ripple out from the click
    and give nearby things a little wobble as the ripple passes them. */
 window.Squish = (() => {
-  const SEL = "button, .card, .item, .dose, .day, .brand img, .side-row, .bar";
+  const SEL = "button, .card, .item, .dose, .day, .brand img, .side-row, .bar, .feel, .j-emoji";
   const NEAR = ".card, .item, .dose, .day, .nav-item, .chip, .check, .side-row, .btn, .link, .ask, .brand img";
   const springs = new Map(); // element -> its spring
   let raf = 0, last = 0;

@@ -633,3 +633,66 @@ body {
 .day.f1 { background: var(--gloss), var(--grain), #8f98ec; color: #fff; }
 .day.f2 { background: var(--gloss), var(--grain), #6f79e0; color: #fff; }
 .day.f3 { background: var(--gloss), var(--grain), #4f5acc; color: #fff; }
+
+/* ---------- Journal feelings (her ask, 2026-11-10) ---------- */
+.feel-pick { display: flex; flex-direction: column; gap: 14px; align-items: flex-start; }
+.feel-q { font-size: 1.6rem !important; margin: 0 !important; }
+.feel-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(86px, 1fr)); gap: 12px; width: 100%; }
+.feel {
+  border: 2px solid rgba(255, 255, 255, .5); border-radius: 26px; padding: 12px 4px 8px;
+  display: flex; flex-direction: column; align-items: center; gap: 2px;
+  background: var(--gloss), var(--grain), color-mix(in srgb, var(--tone) 70%, white);
+  box-shadow: inset 0 3px 0 rgba(255, 255, 255, .6), inset 0 -4px 6px rgba(110, 70, 160, .16), 0 4px 0 rgba(110, 70, 160, .14);
+}
+.feel span { font-size: 2.4rem; line-height: 1.1; font-family: "Segoe UI Emoji", "Apple Color Emoji", "Noto Color Emoji", sans-serif; }
+.feel small { font-weight: 800; color: var(--muted); font-size: .8rem; }
+.feel:hover { background: var(--gloss), var(--grain), color-mix(in srgb, var(--tone) 85%, white); }
+.j-head { align-items: center; gap: 14px; }
+.j-emoji {
+  font-size: 2.6rem; line-height: 1; width: 66px; height: 66px; border-radius: 50%;
+  border: 2px solid rgba(255, 255, 255, .55); display: grid; place-items: center; padding: 0;
+  background: var(--gloss), var(--grain), color-mix(in srgb, var(--tone) 70%, white);
+  box-shadow: inset 0 3px 0 rgba(255, 255, 255, .6), 0 4px 0 rgba(110, 70, 160, .14);
+  font-family: "Segoe UI Emoji", "Apple Color Emoji", "Noto Color Emoji", sans-serif;
+}
+.j-emoji-small { margin-right: 6px; font-family: "Segoe UI Emoji", "Apple Color Emoji", "Noto Color Emoji", sans-serif; }
+
+/* ---------- Woodland scene behind the app (her ask, 2026-11-10) ---------- */
+#app { position: relative; }
+#main { position: relative; z-index: 1; }
+#page { padding-bottom: min(300px, 36vh); }
+.scene {
+  position: absolute; z-index: 0; pointer-events: none;
+  left: clamp(200px, 22vw, 260px); right: 0; bottom: 0; height: min(320px, 40vh);
+}
+.scene svg { width: 100%; height: 100%; display: block; }
+.sway { transform-box: fill-box; transform-origin: 50% 100%; animation: sway var(--t, 4s) ease-in-out infinite alternate; }
+@keyframes sway { from { transform: rotate(-3.5deg); } to { transform: rotate(3.5deg); } }
+.weasel .tail { transform-box: fill-box; transform-origin: 0% 100%; animation: swish 2.6s ease-in-out infinite alternate; }
+.weasel.sitting .tail { animation-duration: 3.4s; }
+@keyframes swish { from { transform: rotate(-9deg); } to { transform: rotate(7deg); } }
+.blink { transform-box: fill-box; transform-origin: 50% 50%; animation: blink 4.6s infinite; }
+.walking .blink { animation-duration: 3.7s; }
+@keyframes blink { 0%, 93%, 100% { transform: scaleY(1); } 95.5% { transform: scaleY(.1); } }
+.sitting .head { transform-box: fill-box; transform-origin: 70% 90%; animation: tilt 6s ease-in-out infinite; }
+@keyframes tilt { 0%, 40%, 100% { transform: rotate(0); } 55%, 80% { transform: rotate(-9deg); } }
+.leg { transform-box: fill-box; transform-origin: 50% 0%; animation: step .32s ease-in-out infinite alternate; }
+.leg.b { animation-delay: -.32s; }
+@keyframes step { from { transform: rotate(-24deg); } to { transform: rotate(24deg); } }
+.bob { animation: bob2 .32s ease-in-out infinite alternate; }
+@keyframes bob2 { from { transform: translateY(0); } to { transform: translateY(-2.2px); } }
+/* Walks right to left across the meadow, then takes a break off-screen before the next stroll. */
+.wander { animation: wander 46s linear infinite; animation-delay: -15s; }
+@keyframes wander { 0% { transform: translateX(1300px); } 62% { transform: translateX(-160px); } 100% { transform: translateX(-160px); } }
+.spark { transform-box: fill-box; animation: rise var(--t, 7s) ease-in-out infinite; animation-delay: var(--d, 0s); opacity: 0; filter: drop-shadow(0 0 4px #fff3b0); }
+@keyframes rise { 0% { transform: translate(0, 0); opacity: 0; } 20% { opacity: .95; } 60% { transform: translate(14px, -90px); opacity: .7; } 100% { transform: translate(-6px, -170px); opacity: 0; } }
+
+/* Phone: the meadow stays, but holds still (her phone is for tapping and reading). */
+@media (max-width: 760px) {
+  .scene { left: 0; height: 24vh; }
+  #page { padding-bottom: 26vh; }
+}
+@media (max-width: 760px), (hover: none) {
+  .scene * { animation: none !important; }
+  .wander { display: none; }
+}
