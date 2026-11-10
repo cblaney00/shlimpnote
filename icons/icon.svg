@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128">
+  <rect width="128" height="128" rx="30" fill="#e8d2f3"/>
+  <!-- a little curled shrimp -->
+  <g stroke="#e07c98" stroke-width="3" stroke-linecap="round" fill="none">
+    <path d="M40 40 C30 22 18 20 12 24"/>
+    <path d="M44 36 C40 18 30 12 22 12"/>
+  </g>
+  <path d="M38 44 C58 30 92 34 100 62 C106 84 92 104 70 104 C58 104 52 96 56 88 C60 80 72 84 76 76 C80 66 70 56 56 58 C46 60 36 56 38 44 Z" fill="#f7a8bd"/>
+  <g stroke="#f4d2dc" stroke-width="3" stroke-linecap="round" fill="none">
+    <path d="M62 40 C70 46 72 54 70 60"/>
+    <path d="M80 44 C86 52 86 62 82 70"/>
+    <path d="M94 56 C96 66 92 76 86 82"/>
+  </g>
+  <path d="M56 88 C46 92 40 102 44 110 C50 104 54 100 62 98 Z" fill="#f28fab"/>
+  <circle cx="46" cy="46" r="4.5" fill="#4a4458"/>
+  <circle cx="47.5" cy="44.5" r="1.4" fill="#fff"/>
+</svg>
