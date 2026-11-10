@@ -74,7 +74,7 @@ function counts(id) {
 
 function drawNav() {
   $("#nav").innerHTML = PAGES.map((p) => `
-    <button class="nav-item ${p.id === current ? "on" : ""}" data-go="${p.id}">
+    <button class="nav-item ${p.id === current ? "on" : ""}" data-go="${p.id}" style="--c:${p.color}">
       <span class="nav-dot" style="background:${p.color}"></span>${p.name}
       <span class="nav-count">${counts(p.id)}</span>
     </button>`).join("");
@@ -94,6 +94,7 @@ function render(animate = false) {
   $("#page-title").textContent = page.id === "today" ? greeting() : page.name;
   $("#page-sub").textContent = page.id === "today" ? fmtDay(dayKey(), { weekday: "long", day: "numeric", month: "long" }) : "";
   const el = $("#page");
+  document.documentElement.style.setProperty("--tone", page.color || "var(--lavender)");
   el.innerHTML = "";
   (VIEWS[page.id] || VIEWS.today)(el);
   if (animate) { el.classList.remove("page-in"); void el.offsetWidth; el.classList.add("page-in"); }
@@ -319,7 +320,7 @@ const VIEWS = {};
 VIEWS.today = (el) => {
   const grid = h(`<div class="grid"></div>`);
   // Meds
-  const meds = h(`<div class="card"><h2><span class="nav-dot" style="background:var(--mint)"></span>Meds today</h2></div>`);
+  const meds = h(`<div class="card" style="--tone:var(--mint)"><h2><span class="nav-dot" style="background:var(--mint)"></span>Meds today</h2></div>`);
   if (!S.meds.length) meds.appendChild(emptyLink("No meds added yet.", "Add one", "meds"));
   else {
     const rows = h(`<div class="stack"></div>`);
@@ -334,7 +335,7 @@ VIEWS.today = (el) => {
 
   // Cycle
   const info = cycleInfo();
-  const cyc = h(`<div class="card"><h2><span class="nav-dot" style="background:var(--peri)"></span>Cycle</h2></div>`);
+  const cyc = h(`<div class="card" style="--tone:var(--peri)"><h2><span class="nav-dot" style="background:var(--peri)"></span>Cycle</h2></div>`);
   if (!info.last) cyc.appendChild(emptyLink("Mark your period on the calendar to start tracking.", "Open calendar", "cycle"));
   else {
     const onPeriod = !!S.cycle.flow[dayKey()];
@@ -350,7 +351,7 @@ VIEWS.today = (el) => {
   for (const [key, name, color] of [["chores", "Chores", "var(--peach)"], ["work", "Work", "var(--sky)"]]) {
     resetRepeats();
     const open = S.lists[key].filter((i) => !i.done);
-    const c = h(`<div class="card"><h2><span class="nav-dot" style="background:${color}"></span>${name}</h2></div>`);
+    const c = h(`<div class="card" style="--tone:${color}"><h2><span class="nav-dot" style="background:${color}"></span>${name}</h2></div>`);
     if (!open.length) c.appendChild(emptyLink("Nothing to do.", "Add something", key));
     else {
       const l = h(`<div class="list"></div>`);
@@ -363,14 +364,14 @@ VIEWS.today = (el) => {
 
   // Journal
   const j = S.journal[dayKey()];
-  const jc = h(`<div class="card"><h2><span class="nav-dot" style="background:var(--blush)"></span>Journal</h2></div>`);
+  const jc = h(`<div class="card" style="--tone:var(--blush)"><h2><span class="nav-dot" style="background:var(--blush)"></span>Journal</h2></div>`);
   jc.appendChild(j && j.text
     ? emptyLink(j.text.slice(0, 120) + (j.text.length > 120 ? "…" : ""), "Keep writing", "journal")
     : emptyLink("How are you today?", "Write", "journal"));
   grid.appendChild(jc);
 
   // Goals
-  const gc = h(`<div class="card"><h2><span class="nav-dot" style="background:var(--lilac)"></span>Goals</h2></div>`);
+  const gc = h(`<div class="card" style="--tone:var(--lilac)"><h2><span class="nav-dot" style="background:var(--lilac)"></span>Goals</h2></div>`);
   if (!S.goals.length) gc.appendChild(emptyLink("No goals yet.", "Set one", "goals"));
   else {
     const st = h(`<div class="stack"></div>`);

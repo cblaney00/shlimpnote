@@ -392,3 +392,70 @@ body { font-weight: 500; letter-spacing: .1px; }
 }
 .ripple.fill { border: 0; background: radial-gradient(circle, var(--ring, rgba(184, 156, 224, .35)) 0%, transparent 70%); animation-duration: .6s; }
 @keyframes ripple { to { transform: translate(-50%, -50%) scale(1); opacity: 0; } }
+
+/* =====================================================================
+   Colour everywhere (his ask, 2026-11-10: "wheres the color?").
+   Each page has a tone (its sidebar colour, set by app.js as --tone); cards, buttons,
+   ticks and highlights are tinted with it. Today's cards each use their own section's tone.
+   ===================================================================== */
+:root { --tone: var(--lavender); }
+body {
+  background:
+    radial-gradient(900px 600px at 105% -10%, color-mix(in srgb, var(--blush) 70%, transparent), transparent 70%),
+    radial-gradient(800px 700px at -10% 110%, color-mix(in srgb, var(--mint) 55%, transparent), transparent 70%),
+    radial-gradient(700px 500px at 60% 120%, color-mix(in srgb, var(--sky) 55%, transparent), transparent 70%),
+    linear-gradient(180deg, #fbf6ff, #fff8fb);
+  background-attachment: fixed;
+}
+#sidebar {
+  background: linear-gradient(180deg, #efe4fb 0%, #f9e3ee 55%, #e3f3ec 100%);
+  border-right: 0;
+  box-shadow: inset -1px 0 0 rgba(255, 255, 255, .7), 4px 0 18px rgba(140, 100, 190, .08);
+}
+.nav-item:hover { background: color-mix(in srgb, var(--c) 35%, transparent); }
+.nav-item.on {
+  background: linear-gradient(180deg, color-mix(in srgb, var(--c) 55%, white), var(--c));
+  box-shadow: inset 0 2px 0 rgba(255, 255, 255, .8), inset 0 -3px 0 rgba(90, 60, 140, .10), 0 4px 12px color-mix(in srgb, var(--c) 80%, transparent);
+}
+.nav-item.on .nav-count { color: var(--ink); }
+.ask { background: rgba(255, 255, 255, .45); }
+
+#page-title {
+  display: inline-block;
+  background: linear-gradient(transparent 62%, color-mix(in srgb, var(--tone) 85%, transparent) 62%, color-mix(in srgb, var(--tone) 85%, transparent) 92%, transparent 92%);
+  padding: 0 6px; margin-left: -6px; border-radius: 4px;
+}
+
+.card {
+  background: linear-gradient(160deg, color-mix(in srgb, var(--tone) 42%, white) 0%, color-mix(in srgb, var(--tone) 14%, white) 100%);
+  box-shadow: inset 0 2px 0 rgba(255, 255, 255, .95), inset 0 -3px 0 color-mix(in srgb, var(--tone) 45%, transparent),
+              0 8px 22px color-mix(in srgb, var(--tone) 55%, transparent), 0 2px 5px rgba(120, 90, 170, .06);
+}
+.card h2 .nav-dot { width: 18px; height: 18px; }
+
+.btn {
+  color: var(--ink);
+  background: linear-gradient(180deg, color-mix(in srgb, var(--tone) 50%, white), var(--tone));
+  box-shadow: inset 0 2px 0 rgba(255, 255, 255, .7), inset 0 -3px 0 rgba(90, 60, 140, .12), 0 4px 10px color-mix(in srgb, var(--tone) 90%, transparent);
+}
+.btn:hover { background: linear-gradient(180deg, color-mix(in srgb, var(--tone) 70%, white), color-mix(in srgb, var(--tone) 85%, #b89ce0)); }
+.link, .chip { background: linear-gradient(180deg, #fff, color-mix(in srgb, var(--tone) 22%, white)); }
+.link:hover, .chip:hover { background: linear-gradient(180deg, #fff, color-mix(in srgb, var(--tone) 45%, white)); }
+.chip.on { background: linear-gradient(180deg, color-mix(in srgb, var(--tone) 55%, white), var(--tone)); }
+.item:hover { background: color-mix(in srgb, var(--tone) 28%, transparent); }
+.check { border-color: color-mix(in srgb, var(--tone) 70%, #b9b2c4); }
+.check.on {
+  border-color: color-mix(in srgb, var(--tone) 60%, #8f6fc4);
+  background: radial-gradient(circle at 35% 30%, color-mix(in srgb, var(--tone) 60%, white), color-mix(in srgb, var(--tone) 55%, #8f6fc4));
+}
+.field, .grow { border-color: color-mix(in srgb, var(--tone) 45%, white); background: rgba(255, 255, 255, .85); }
+.field:focus, .grow:focus { border-color: var(--tone); box-shadow: 0 0 0 4px color-mix(in srgb, var(--tone) 40%, transparent); }
+.day { background: rgba(255, 255, 255, .75); }
+.side-row:hover { background: color-mix(in srgb, var(--tone) 28%, transparent); }
+.side-row.on { background: linear-gradient(180deg, color-mix(in srgb, var(--tone) 45%, white), color-mix(in srgb, var(--tone) 70%, white)); }
+.bar { background: rgba(255, 255, 255, .7); }
+.bar > div { background: linear-gradient(90deg, var(--lilac), var(--peri), var(--accent)); }
+.undo { background: color-mix(in srgb, var(--tone) 30%, white); }
+.editor .body-in, .editor .title-in { color: var(--ink); }
+.week span { background: rgba(255, 255, 255, .8); }
+@media (max-width: 760px) { #sidebar { background: linear-gradient(90deg, #efe4fb, #f9e3ee, #e3f3ec); } }

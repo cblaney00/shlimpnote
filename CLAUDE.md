@@ -67,6 +67,12 @@ VibeNote (`../vibenote/CLAUDE.md`):
   "Install app"/"Add to Home screen", on iPhone Safari Share → "Add to Home Screen". Under
   760 px the sidebar is a scrolling row of pills at the top; Cycle stacks (`.cycle-split`).
   Her phone and PC keep **separate** data until there is syncing (not built; asked him).
+- 2026-11-10, his words: "wheres the color?" (the squishy version was mostly white). Now
+  **every page has a tone** = its sidebar colour (`--tone`, set in `render`): cards are a
+  soft gradient of it, buttons/chips/ticks/fields/hover use it, the page title has a
+  highlighter stripe in it; Today's cards each use their own section's tone. Sidebar is a
+  lavender → pink → mint fade, the picked row is filled with its colour, and the page has
+  soft colour blobs behind it. Colours made with `color-mix()`.
 Ask him before changing the look.
 
 ## How it is built
