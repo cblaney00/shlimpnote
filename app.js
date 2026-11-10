@@ -42,6 +42,7 @@ function save(now = false) {
   clearTimeout(saveTimer);
   const write = () => { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) { /* storage full or blocked */ } };
   if (now) write(); else saveTimer = setTimeout(write, 250);
+  if (typeof scheduleSync === "function") scheduleSync();
 }
 window.addEventListener("beforeunload", () => save(true));
 window.addEventListener("pagehide", () => save(true));
@@ -63,6 +64,7 @@ const PAGES = [
   { id: "journal", name: "Journal", color: "var(--blush)" },
 ];
 const ASK = { id: "ask", name: "Ask for a change" };
+const SYNC = { id: "sync", name: "Your devices", color: "var(--sky)" };
 let current = (location.search.match(/page=(\w+)/) || [])[1] || S.ui.page || "today";
 
 function counts(id) {
@@ -92,7 +94,7 @@ function go(id) {
 }
 
 function render(animate = false) {
-  const page = PAGES.find((p) => p.id === current) || ASK;
+  const page = PAGES.find((p) => p.id === current) || (current === "sync" ? SYNC : ASK);
   $("#page-title").textContent = page.id === "today" ? greeting() : page.name;
   $("#page-sub").textContent = page.id === "today" ? fmtDay(dayKey(), { weekday: "long", day: "numeric", month: "long" }) : "";
   const el = $("#page");
@@ -670,17 +672,142 @@ VIEWS.journal = (el) => {
    Her requests become issues in a private GitHub repo that only he (and Claude) can see.
    The repo and key come from config.js. Until a key is there, requests wait here and
    go out by themselves the next time the app is opened with one. */
+/* ---------------- Sync between her devices ----------------
+   Her data lives on each device AND in data.json in the private repo, so her phone and
+   computer show the same things. It syncs when the app opens, when she comes back to it,
+   when the internet comes back, and a few seconds after every change.
+   Merging is three-way: the last synced copy (`base`) tells which side changed what, so a
+   change on the phone and a different change on the computer both survive. If both changed
+   the very same thing, this device wins. `ui` (which page is open, etc.) is never synced. */
 const CFG = window.SHLIMP_CONFIG || {};
-const reqKey = () => (CFG.key ? atob(CFG.key).split("").reverse().join("") : "");
+const KEY_STORE = "shlimpnote.key", BASE_STORE = DEMO ? "shlimpnote.demo.base" : "shlimpnote.base";
+const deviceKey = () => { try { return localStorage.getItem(KEY_STORE) || ""; } catch (e) { return ""; } };
+const gh = (path, opts = {}) => fetch(`https://api.github.com/repos/${CFG.repo}${path}`, {
+  cache: "no-store", ...opts,
+  headers: { Authorization: "Bearer " + deviceKey(), Accept: "application/vnd.github+json", ...(opts.headers || {}) },
+});
+const same = (a, b) => JSON.stringify(a) === JSON.stringify(b);
+const plain = (o) => o && typeof o === "object" && !Array.isArray(o);
+const idList = (a) => Array.isArray(a) && a.length > 0 && a.every((x) => plain(x) && x.id);
+
+function merge3(base, mine, theirs) {
+  if (same(mine, theirs)) return mine;
+  if (same(mine, base)) return theirs;
+  if (same(theirs, base)) return mine;
+  if (plain(mine) && plain(theirs)) {
+    const out = {}, b = plain(base) ? base : {};
+    for (const k of new Set([...Object.keys(mine), ...Object.keys(theirs)])) {
+      const v = merge3(b[k], mine[k], theirs[k]);
+      if (v !== undefined) out[k] = v;
+    }
+    return out;
+  }
+  if ((idList(mine) || idList(theirs)) && Array.isArray(mine) && Array.isArray(theirs)) {
+    const by = (a) => Object.fromEntries((Array.isArray(a) ? a : []).filter(plain).map((x) => [x.id, x]));
+    const B = by(base), M = by(mine), T = by(theirs);
+    const ids = [...mine.map((x) => x.id), ...theirs.map((x) => x.id).filter((id) => !(id in M))];
+    return ids.map((id) => merge3(B[id], M[id], T[id])).filter((x) => x !== undefined);
+  }
+  return mine; // both changed the same thing: this device wins
+}
+
+const shareable = () => { const d = JSON.parse(JSON.stringify(S)); delete d.ui; return d; };
+const toB64 = (s) => btoa(unescape(encodeURIComponent(s)));
+const fromB64 = (s) => decodeURIComponent(escape(atob(s.replace(/\s/g, ""))));
+let syncState = { busy: false, again: false, at: 0, ok: null, timer: null };
+
+function scheduleSync(ms = 2500) {
+  if (!deviceKey()) return;
+  clearTimeout(syncState.timer);
+  syncState.timer = setTimeout(syncNow, ms);
+}
+async function syncNow() {
+  if (!deviceKey() || !CFG.repo || !navigator.onLine) { drawSync(); return; }
+  if (syncState.busy) { syncState.again = true; return; }
+  syncState.busy = true;
+  try {
+    let remote = null, sha = null;
+    const res = await gh("/contents/data.json");
+    if (res.status === 401 || res.status === 403) { syncState.ok = "key"; return; }
+    if (res.ok) { const j = await res.json(); sha = j.sha; remote = JSON.parse(fromB64(j.content)); }
+    else if (res.status !== 404) throw new Error("GitHub said " + res.status);
+    const mine = shareable();
+    let base = null;
+    try { base = JSON.parse(localStorage.getItem(BASE_STORE) || "null"); } catch (e) { /* none yet */ }
+    const merged = remote ? merge3(base || {}, mine, remote) : mine;
+    if (!same(merged, mine)) {
+      // New things from her other device. Never swap data out from under a box she's typing in.
+      const a = document.activeElement;
+      if (a && a.matches("textarea, input")) { syncState.again = true; setTimeout(syncNow, 3000); return; }
+      const ui = S.ui; S = Object.assign(blank(), merged, { ui }); save(true); refresh();
+    }
+    if (!remote || !same(merged, remote)) {
+      const put = await gh("/contents/data.json", {
+        method: "PUT",
+        body: JSON.stringify({ message: "ShlimpNote sync", content: toB64(JSON.stringify(merged, null, 1)), ...(sha ? { sha } : {}) }),
+      });
+      if (put.status === 409 || put.status === 422) { syncState.again = true; return; } // the other device saved first: merge again
+      if (!put.ok) throw new Error("GitHub said " + put.status);
+    }
+    try { localStorage.setItem(BASE_STORE, JSON.stringify(merged)); } catch (e) { /* storage blocked */ }
+    syncState.ok = true; syncState.at = Date.now();
+  } catch (e) {
+    syncState.ok = false;
+  } finally {
+    syncState.busy = false;
+    drawSync();
+    if (syncState.again) { syncState.again = false; setTimeout(syncNow, 800); }
+  }
+}
+
+// A little line under "Ask for a change" saying whether her devices are in step.
+function drawSync() {
+  const el = $("#sync-line"); if (!el) return;
+  const k = deviceKey();
+  el.textContent = !k ? "Not connected — tap to connect"
+    : syncState.ok === "key" ? "Connect code not working — tap"
+    : syncState.ok === false || !navigator.onLine ? "Offline — saved on this device"
+    : syncState.at ? "Synced ✓" : "Syncing…";
+  el.classList.toggle("warn", !k || syncState.ok === "key");
+}
+
+function connect(code) {
+  code = (code || "").trim();
+  if (!code) return false;
+  try { localStorage.setItem(KEY_STORE, code); } catch (e) { return false; }
+  syncState.ok = null; drawSync(); syncNow(); sendRequests();
+  return true;
+}
+// The connect link: ...shlimpnote/#connect=CODE — saves the code and tidies the address.
+(() => {
+  const m = location.hash.match(/connect=([^&]+)/);
+  if (m) { connect(decodeURIComponent(m[1])); history.replaceState(null, "", location.pathname + location.search); }
+})();
+
+VIEWS.sync = (el) => {
+  const k = deviceKey();
+  const card = h(`<div class="card stack" style="--tone:var(--sky)">
+      <h2>Keep your devices in step</h2>
+      <div>${k ? "This device is connected. Everything you write here also shows on your other devices when you open or refresh ShlimpNote." : "Paste your connect code here once, on each device you use (computer and phone). Then they all show the same notes."}</div>
+      <div class="row"><input class="field" data-code placeholder="${k ? "Paste a new connect code" : "Paste your connect code"}" autocomplete="off"><button class="btn">Connect</button></div>
+      <div class="muted small" data-msg>${k ? (syncState.at ? "Last synced " + fmtTime(syncState.at) : "") : ""}</div>
+      ${k ? '<div class="row"><button class="link" data-now>Sync now</button></div>' : ""}
+    </div>`);
+  const go = () => { if (connect($("[data-code]", card).value)) { $("[data-msg]", card).textContent = "Connected — syncing…"; setTimeout(refresh, 2500); } };
+  $(".btn", card).addEventListener("click", go);
+  $("[data-code]", card).addEventListener("keydown", (e) => { if (e.key === "Enter") go(); });
+  const now = $("[data-now]", card); if (now) now.addEventListener("click", () => { syncNow(); $("[data-msg]", card).textContent = "Syncing…"; setTimeout(refresh, 2500); });
+  el.appendChild(card);
+};
+
 
 async function sendRequests() {
-  if (!CFG.repo || !reqKey() || !navigator.onLine) return;
+  if (!CFG.repo || !deviceKey() || !navigator.onLine) return;
   let changed = false;
   for (const r of S.requests.filter((r) => r.status === "waiting")) {
     try {
-      const res = await fetch(`https://api.github.com/repos/${CFG.repo}/issues`, {
+      const res = await gh("/issues", {
         method: "POST",
-        headers: { Authorization: "Bearer " + reqKey(), Accept: "application/vnd.github+json" },
         body: JSON.stringify({
           title: r.text.replace(/\s+/g, " ").slice(0, 70) + (r.text.length > 70 ? "…" : ""),
           body: r.text + "\n\n— sent from ShlimpNote, " + new Date(r.at).toLocaleString(),
@@ -693,7 +820,7 @@ async function sendRequests() {
   // Has he finished any? A closed issue means done.
   for (const r of S.requests.filter((r) => r.status === "sent" && r.issue)) {
     try {
-      const res = await fetch(`https://api.github.com/repos/${CFG.repo}/issues/${r.issue}`, { headers: { Authorization: "Bearer " + reqKey(), Accept: "application/vnd.github+json" } });
+      const res = await gh(`/issues/${r.issue}`);
       if (res.ok) { const j = await res.json(); if (j.state === "closed") { r.status = "done"; changed = true; } }
     } catch (e) { break; }
   }
@@ -745,11 +872,14 @@ document.addEventListener("click", (e) => { const b = e.target.closest("[data-go
 resetRepeats();
 drawNav();
 render();
+drawSync();
 sendRequests();
-window.addEventListener("online", sendRequests);
+syncNow();
+window.addEventListener("online", () => { sendRequests(); syncNow(); });
 // Coming back to the app on a new day: refresh Today so ticks and chores are for the right day.
 let lastDay = dayKey();
 document.addEventListener("visibilitychange", () => {
+  if (document.visibilityState === "visible") syncNow();
   if (document.visibilityState === "visible" && dayKey() !== lastDay) { lastDay = dayKey(); resetRepeats(); refresh(); }
 });
 

@@ -1,6 +1,6 @@
-/* Where "Ask for a change" sends her requests: issues in a private GitHub repo.
-   `key` is a GitHub token that can only write issues in that one repo (stored scrambled). */
+/* Where her data syncs and where "Ask for a change" sends requests: a PRIVATE GitHub repo
+   that only he can see. The key that opens it is NOT here (this code is public) — it is
+   entered once on each of her devices (the "connect code") and kept only on that device. */
 window.SHLIMP_CONFIG = {
-  repo: "",
-  key: "",
+  repo: "cblaney00/shlimpnote-data",
 };
