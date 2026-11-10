@@ -55,7 +55,7 @@ const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "
 const PAGES = [
   { id: "today", name: "Today", color: "var(--lavender)" },
   { id: "meds", name: "Meds", color: "var(--mint)" },
-  { id: "cycle", name: "Cycle", color: "var(--rose)" },
+  { id: "cycle", name: "Cycle", color: "var(--peri)" },
   { id: "notes", name: "Notes", color: "var(--butter)" },
   { id: "chores", name: "Chores", color: "var(--peach)" },
   { id: "work", name: "Work", color: "var(--sky)" },
@@ -334,7 +334,7 @@ VIEWS.today = (el) => {
 
   // Cycle
   const info = cycleInfo();
-  const cyc = h(`<div class="card"><h2><span class="nav-dot" style="background:var(--rose)"></span>Cycle</h2></div>`);
+  const cyc = h(`<div class="card"><h2><span class="nav-dot" style="background:var(--peri)"></span>Cycle</h2></div>`);
   if (!info.last) cyc.appendChild(emptyLink("Mark your period on the calendar to start tracking.", "Open calendar", "cycle"));
   else {
     const onPeriod = !!S.cycle.flow[dayKey()];
@@ -450,7 +450,7 @@ VIEWS.cycle = (el) => {
   const cal = h(`<div class="card">
       <div class="cal-head"><button class="link" data-prev>‹</button><h2>${shown.toLocaleDateString(undefined, { month: "long", year: "numeric" })}</h2><button class="link" data-next>›</button></div>
       <div class="cal"></div>
-      <div class="legend"><span><i style="background:#fde3ea"></i>Light</span><span><i style="background:var(--rose)"></i>Medium</span><span><i style="background:#f1a0b6"></i>Heavy</span><span><i style="border:1.5px dashed var(--rose-deep)"></i>Expected</span></div>
+      <div class="legend"><span><i style="background:var(--peri-light)"></i>Light</span><span><i style="background:var(--peri)"></i>Medium</span><span><i style="background:var(--peri-deep)"></i>Heavy</span><span><i style="border:1.5px dashed var(--peri-line)"></i>Expected</span></div>
       <div class="muted small" style="margin-top:8px">Click a day to mark it. Click again for heavier; a fourth click clears it.</div>
     </div>`);
   const grid = $(".cal", cal);

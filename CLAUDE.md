@@ -37,8 +37,17 @@ VibeNote (`../vibenote/CLAUDE.md`):
 - Enter adds, Shift+Enter is a new line; click text to edit it in place.
 - Drag rows (by the ⠿ grip) to reorder.
 - Works at any window size; under 760 px wide the sidebar becomes a top bar.
-- Look: **pastel colours** (her ask): lavender, mint, rose, butter, peach, sky, lilac,
+- Look: **pastel colours** (her ask): lavender, mint, periwinkle, butter, peach, sky, lilac,
   blush on a near-white lilac page, soft plum-grey text. Tokens at the top of `style.css`.
+- 2026-11-10, his ask: "that dot color for cycle is horrible, make it not red at all" —
+  Cycle is **periwinkle** (`--peri*`), calendar shades too (light/medium/heavy). No red or
+  rose on the Cycle page.
+- 2026-11-10, his ask: "not obvious that it runs in firefox, its own icon and no search bar".
+  On her Windows PC that is Edge's installed-app mode. On his Linux machine `run.sh` opens a
+  separate Firefox profile (`app-window/`: userChrome.css hides every toolbar, window class
+  `shlimpnote`). Firefox still adds " — Mozilla Firefox" to the window title; nothing in a
+  profile can remove that. `<meta name="darkreader-lock">` stops his system-wide Dark Reader
+  from darkening it, and `color-scheme: light only` keeps it pastel in dark mode.
 Ask him before changing the look.
 
 ## How it is built

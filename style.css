@@ -12,6 +12,10 @@
   --lavender: #d9ccf2;
   --mint: #c6ebd9;
   --rose: #f7c3d1;
+  --peri: #c9cdf6;      /* Cycle (his ask: "not red at all") */
+  --peri-light: #e7e9fc;
+  --peri-deep: #9ca3ea;
+  --peri-line: #8a91de;
   --butter: #fbebb0;
   --peach: #fcd3bb;
   --sky: #c6e0f5;
@@ -25,10 +29,11 @@
   --radius: 14px;
   --shadow: 0 1px 2px rgba(90, 70, 120, .05), 0 4px 16px rgba(90, 70, 120, .06);
   --ease: cubic-bezier(.2, .7, .2, 1);
+  color-scheme: light only; /* always the pastel look, even when the computer is in dark mode */
   font-size: 16px;
 }
 
-* { box-sizing: border-box; }
+* { box-sizing: border-box; forced-color-adjust: none; }
 html, body { margin: 0; height: 100%; }
 body {
   background: var(--bg);
@@ -227,14 +232,14 @@ button { cursor: pointer; }
   padding: 6px 8px; font-size: .95rem; position: relative;
   transition: background .18s var(--ease), border-color .18s, transform .1s;
 }
-.day:hover { border-color: var(--rose); }
+.day:hover { border-color: var(--peri); }
 .day:active { transform: scale(.96); }
 .day.out { opacity: .35; }
 .day.today { border-color: var(--accent); font-weight: 700; }
-.day.f1 { background: #fde3ea; }
-.day.f2 { background: var(--rose); }
-.day.f3 { background: #f1a0b6; color: #fff; }
-.day.guess { border: 1.5px dashed var(--rose-deep); }
+.day.f1 { background: var(--peri-light); }
+.day.f2 { background: var(--peri); }
+.day.f3 { background: var(--peri-deep); color: #fff; }
+.day.guess { border: 1.5px dashed var(--peri-line); }
 .legend { display: flex; gap: 16px; flex-wrap: wrap; margin-top: 14px; color: var(--muted); font-size: .9rem; }
 .legend i { display: inline-block; width: 14px; height: 14px; border-radius: 4px; vertical-align: -2px; margin-right: 6px; }
 .big-num { font-size: 2.2rem; font-weight: 700; line-height: 1.1; }
