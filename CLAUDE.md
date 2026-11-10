@@ -95,6 +95,18 @@ VibeNote (`../vibenote/CLAUDE.md`):
   fields/days/bars/chips mixed with the page colour instead of white. Period days are
   clearly deeper periwinkle with white numbers. **Rule from now on: if anything reads as
   white or washed out, it's wrong.**
+- 2026-11-10, her asks (through him): "for journal when you open it can she choose an emoji
+  to start the note taking to show how she is feeling when she starts writing" — Journal
+  opens on a big squishy grid of 15 feelings emoji (`FEELINGS`); picking one opens the
+  writing box with it shown big at the top (click it to change). Stored as `entry.emoji`
+  (old `mood` words map to an emoji). Shown in the day list and on Today's Journal card.
+- "a cute background of some mushrooms, a little passive animation ... she likes nature and
+  cute things, maybe little fluffy animals with tiny legs and big eyes and a long tail like
+  a cute weasel". The **meadow** (`.scene`, inline SVG in `index.html`, behind the pages):
+  hills, mushrooms with tiny faces and dotted pastel caps that sway, grass and daisies,
+  sparkles drifting up, a peach weasel sitting by the mushrooms (blinks, tilts its head,
+  swishes its tail) and a lavender weasel that trots across on tiny legs every ~46 s. All
+  CSS animation. On phones the meadow holds still and the walker is hidden.
 Ask him before changing the look.
 
 ## How it is built
