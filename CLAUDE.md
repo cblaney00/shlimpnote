@@ -73,6 +73,22 @@ VibeNote (`../vibenote/CLAUDE.md`):
   highlighter stripe in it; Today's cards each use their own section's tone. Sidebar is a
   lavender → pink → mint fade, the picked row is filled with its colour, and the page has
   soft colour blobs behind it. Colours made with `color-mix()`.
+- 2026-11-10, his words: "i want this whole app way more squishy and jiggly, also it is
+  still white, it should be pastel colored and jiggly, heavily textured". Now the **jelly
+  look** (last block of `style.css`): no big white areas — page is pastel lavender with
+  colour blobs, cards are solid pastel jelly (`--tone`) with a glossy top (`--gloss`),
+  sugar-grain noise (`--grain`, an SVG noise image) and white polka dots (`--dots`), thick
+  soft edges; buttons/chips are gummy sweets; ticks are jelly beans. Jiggle: stronger
+  springs, hover wobble, scroll sloshes the cards, pages pop in card by card
+  (`Squish.pop`), cards/dots/ticks/days "breathe" via the CSS `scale` property (separate
+  from the spring's `transform`, so they don't fight), the shrimp bobs.
+- 2026-11-10, his words: "the changes i ask for should only apply to her phone if her
+  phone would need it, her phone should mostly just need to click around and type things
+  and read things that would be up to date with her computer version on refresh" and "it
+  would also refresh on open". On phones (`max-width: 760px` or no hover) there is no
+  always-on breathing and no hover wobble; taps still squish. **Syncing between her PC and
+  phone is wanted** (on open and on refresh) — not built yet; needs an online place for
+  her data (asked him).
 Ask him before changing the look.
 
 ## How it is built

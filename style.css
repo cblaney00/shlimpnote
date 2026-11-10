@@ -459,3 +459,104 @@ body {
 .editor .body-in, .editor .title-in { color: var(--ink); }
 .week span { background: rgba(255, 255, 255, .8); }
 @media (max-width: 760px) { #sidebar { background: linear-gradient(90deg, #efe4fb, #f9e3ee, #e3f3ec); } }
+
+/* =====================================================================
+   Jelly look (his ask, 2026-11-10: "it is still white, it should be pastel colored and
+   jiggly, heavily textured"). Solid pastel everywhere, sugar-grain texture, polka dots,
+   glossy jelly highlights. Nothing big is white any more.
+   ===================================================================== */
+:root {
+  --grain: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 .42  0 0 0 0 .30  0 0 0 0 .55  0 0 0 .32 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+  --sparkle: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='120' height='120'><filter id='s'><feTurbulence type='fractalNoise' baseFrequency='.55' numOctaves='1' seed='7'/><feColorMatrix values='0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 9 -7.2'/></filter><rect width='100%' height='100%' filter='url(%23s)'/></svg>");
+  --dots: radial-gradient(circle, rgba(255, 255, 255, .55) 0 2px, transparent 2.6px);
+  --gloss: radial-gradient(130% 70% at 25% -10%, rgba(255, 255, 255, .75) 0 30%, rgba(255, 255, 255, 0) 62%);
+  --tone-deep: color-mix(in srgb, var(--tone) 70%, #7b5aa8);
+}
+body {
+  background:
+    var(--grain),
+    var(--dots) 0 0 / 26px 26px,
+    radial-gradient(700px 520px at 100% 0%, var(--blush), transparent 70%),
+    radial-gradient(700px 600px at 0% 100%, var(--mint), transparent 70%),
+    radial-gradient(600px 500px at 70% 100%, var(--sky), transparent 70%),
+    radial-gradient(600px 500px at 35% 30%, color-mix(in srgb, var(--tone) 70%, var(--lavender)), transparent 75%),
+    #e9dcf7;
+  background-attachment: fixed;
+}
+#sidebar {
+  background:
+    var(--grain),
+    var(--dots) 0 0 / 22px 22px,
+    linear-gradient(180deg, #dccbf6 0%, #f6c9dc 50%, #c7ecd9 100%);
+  box-shadow: inset -3px 0 0 rgba(255, 255, 255, .5), 6px 0 24px rgba(120, 80, 170, .18);
+}
+.brand img { animation: bob 3.2s ease-in-out infinite; }
+@keyframes bob { 0%, 100% { rotate: -6deg; translate: 0 0; } 50% { rotate: 6deg; translate: 0 -3px; } }
+.nav-item { border: 0; }
+.nav-item:hover { background: rgba(255, 255, 255, .45); }
+.nav-item.on {
+  background: var(--gloss), var(--grain), var(--c);
+  box-shadow: inset 0 3px 0 rgba(255, 255, 255, .75), inset 0 -4px 0 rgba(90, 60, 140, .16), 0 5px 0 rgba(90, 60, 140, .10), 0 8px 16px rgba(90, 60, 140, .18);
+}
+.nav-dot { animation: breathe 3.5s ease-in-out infinite; box-shadow: inset 0 -2px 3px rgba(90, 60, 140, .22), inset 0 2px 2px rgba(255, 255, 255, .9), 0 2px 4px rgba(90, 60, 140, .25); filter: saturate(1.4); }
+.ask { background: var(--grain), rgba(255, 255, 255, .5); border-color: #a888d8; }
+
+#page-title { text-shadow: 0 2px 0 rgba(255, 255, 255, .8); }
+
+/* Cards: thick coloured jelly with a glossy top and grainy sugar. */
+.card {
+  position: relative;
+  border-radius: 28px;
+  background: var(--gloss), var(--grain), var(--dots) 0 0 / 24px 24px, var(--tone);
+  border: 2px solid rgba(255, 255, 255, .55);
+  box-shadow:
+    inset 0 4px 0 rgba(255, 255, 255, .6),
+    inset 0 -8px 14px color-mix(in srgb, var(--tone) 55%, #6b4a98 45%),
+    0 6px 0 color-mix(in srgb, var(--tone) 60%, #7b5aa8),
+    0 14px 28px rgba(110, 70, 160, .22);
+  animation: breathe 4.5s ease-in-out infinite;
+}
+@keyframes breathe { 0%, 100% { scale: 1 1; } 50% { scale: 1.012 .99; } }
+.card .muted, .card .small { color: color-mix(in srgb, var(--ink) 75%, var(--tone)); }
+
+/* Buttons and chips: little gummy sweets. */
+.btn, .link, .chip, .dose {
+  border: 2px solid rgba(255, 255, 255, .6);
+  background: var(--gloss), var(--grain), color-mix(in srgb, var(--tone) 55%, white);
+  box-shadow: inset 0 3px 0 rgba(255, 255, 255, .7), inset 0 -4px 6px rgba(110, 70, 160, .16), 0 4px 0 rgba(110, 70, 160, .14), 0 6px 12px rgba(110, 70, 160, .14);
+  color: var(--ink); font-weight: 800;
+}
+.btn { background: var(--gloss), var(--grain), color-mix(in srgb, var(--tone) 75%, #b89ce0); }
+.btn:hover, .link:hover, .chip:hover { background: var(--gloss), var(--grain), color-mix(in srgb, var(--tone) 85%, #c9b2ee); }
+.chip.on, .dose.on { background: var(--gloss), var(--grain), color-mix(in srgb, var(--tone) 70%, #a98bd8); color: #3d3550; }
+.dose.on { background: var(--gloss), var(--grain), #9fd9bd; }
+
+/* Ticks: shiny jelly beans. */
+.check { animation: breathe 3s ease-in-out infinite; border: 2.5px solid rgba(255, 255, 255, .8);
+  background: radial-gradient(circle at 35% 30%, #fff 0 18%, color-mix(in srgb, var(--tone) 45%, white) 60%);
+  box-shadow: inset 0 -3px 4px rgba(110, 70, 160, .2), 0 3px 0 rgba(110, 70, 160, .15); }
+.check.on { background: radial-gradient(circle at 35% 30%, #fff 0 14%, color-mix(in srgb, var(--tone) 50%, #a98bd8) 45%, color-mix(in srgb, var(--tone) 30%, #8f6fc4)); }
+
+.item:hover, .side-row:hover { background: rgba(255, 255, 255, .35); }
+.side-row.on { background: var(--gloss), var(--grain), rgba(255, 255, 255, .55); box-shadow: inset 0 -3px 0 rgba(110, 70, 160, .12), 0 3px 0 rgba(110, 70, 160, .10); }
+.field, .grow { background: var(--grain), rgba(255, 255, 255, .7); border: 2px solid rgba(255, 255, 255, .9); box-shadow: inset 0 3px 6px rgba(110, 70, 160, .14); }
+.field:focus, .grow:focus { background: rgba(255, 255, 255, .9); border-color: #fff; box-shadow: inset 0 3px 6px rgba(110, 70, 160, .12), 0 0 0 4px color-mix(in srgb, var(--tone) 60%, white); }
+.editor .body-in, .editor .title-in { background: transparent; }
+
+.day { animation: breathe 5s ease-in-out infinite; background: var(--grain), rgba(255, 255, 255, .6); border: 2px solid rgba(255, 255, 255, .7); box-shadow: inset 0 -3px 0 rgba(110, 70, 160, .10), 0 3px 0 rgba(110, 70, 160, .08); }
+.day.today { border-color: #8a91de; }
+.day.f1 { background: var(--gloss), var(--grain), #c9cdf6; }
+.day.f2 { background: var(--gloss), var(--grain), #a5acef; }
+.day.f3 { background: var(--gloss), var(--grain), #7f88e0; color: #fff; }
+.bar { height: 18px; background: var(--grain), rgba(255, 255, 255, .6); border: 2px solid rgba(255, 255, 255, .8); }
+.bar > div { background: var(--gloss), var(--grain), linear-gradient(90deg, #f4b9d0, #c9b2ee, #a9b1f0); }
+.week span { background: var(--grain), rgba(255, 255, 255, .55); }
+.week span.full { background: var(--gloss), #9fd9bd; }
+.undo { background: var(--grain), rgba(255, 255, 255, .6); }
+.ripple { border-width: 4px; }
+
+/* Her phone is for tapping, typing and reading: keep the colour, drop the always-on
+   breathing (saves battery) — taps still squish. (His ask: phone only gets what it needs.) */
+@media (max-width: 760px), (hover: none) {
+  .card, .check, .day, .nav-dot, .brand img { animation: none; }
+}

@@ -99,6 +99,7 @@ function render(animate = false) {
   (VIEWS[page.id] || VIEWS.today)(el);
   if (animate) { el.classList.remove("page-in"); void el.offsetWidth; el.classList.add("page-in"); }
   growAll(el);
+  if (window.Squish) { Squish.breathe(document); if (animate) Squish.pop(el); }
 }
 
 function greeting() {
@@ -732,7 +733,7 @@ if ("serviceWorker" in navigator && location.protocol !== "file:") {
    again never restarts the animation — every click just adds a push to a spring that is
    already moving, so repeated clicks blend smoothly. Soft rings ripple out from the click
    and give nearby things a little wobble as the ripple passes them. */
-const Squish = (() => {
+window.Squish = (() => {
   const SEL = "button, .card, .item, .dose, .day, .brand img, .side-row, .bar";
   const NEAR = ".card, .item, .dose, .day, .nav-item, .chip, .check, .side-row, .btn, .link, .ask, .brand img";
   const springs = new Map(); // element -> its spring
@@ -750,7 +751,7 @@ const Squish = (() => {
     if (!s) {
       const r = el.getBoundingClientRect();
       // Small things squish a lot, big cards just a little.
-      const amp = Math.max(0.2, Math.min(1, 70 / Math.sqrt(Math.max(1, r.width * r.height))));
+      const amp = Math.max(0.45, Math.min(1.15, 90 / Math.sqrt(Math.max(1, r.width * r.height))));
       s = { u: 1, uv: 0, ut: 1, j: 0, jv: 0, amp, key: keyOf(el), held: false };
       springs.set(el, s);
       el.classList.add("sq");
@@ -768,9 +769,9 @@ const Squish = (() => {
         el = n; springs.set(n, s); n.classList.add("sq");
       }
       s.uv += (-420 * (s.u - s.ut) - 19 * s.uv) * dt; s.u += s.uv * dt;   // squeeze
-      s.jv += (-300 * s.j - 8 * s.jv) * dt; s.j += s.jv * dt;              // jelly wobble
+      s.jv += (-260 * s.j - 5.5 * s.jv) * dt; s.j += s.jv * dt;            // jelly wobble (loose, so it jiggles longer)
       s.j = Math.max(-1.3, Math.min(1.3, s.j));
-      const w = 0.11 * s.j;
+      const w = 0.16 * s.j;
       el.style.transform = `scale(${(s.u * (1 + w)).toFixed(4)}, ${(s.u * (1 - w)).toFixed(4)})`;
       if (!s.held && Math.abs(s.u - 1) < 4e-4 && Math.abs(s.uv) < 4e-3 && Math.abs(s.j) < 1e-3 && Math.abs(s.jv) < 1e-2) {
         el.style.transform = ""; springs.delete(el);
@@ -780,8 +781,8 @@ const Squish = (() => {
   }
   function push(el, power, hold) {
     const s = spring(el);
-    s.jv = Math.max(-30, Math.min(30, s.jv + 9 * power * s.amp));
-    if (hold) { s.held = true; s.ut = 1 - 0.1 * s.amp; } else s.uv -= 1.2 * power * s.amp;
+    s.jv = Math.max(-40, Math.min(40, s.jv + 11 * power * s.amp));
+    if (hold) { s.held = true; s.ut = 1 - 0.14 * s.amp; } else s.uv -= 1.6 * power * s.amp;
     run();
   }
   function ringColour(el) {
@@ -791,7 +792,7 @@ const Squish = (() => {
     return "rgba(184, 156, 224, .55)";
   }
   function ripple(x, y, size, colour) {
-    [[0, ""], [110, ""], [0, "fill"]].forEach(([delay, kind], i) => {
+    [[0, ""], [120, ""], [240, ""], [0, "fill"]].forEach(([delay, kind], i) => {
       const r = document.createElement("div");
       r.className = "ripple " + kind;
       const d = size + i * 70;
@@ -814,22 +815,56 @@ const Squish = (() => {
     const size = Math.min(420, Math.max(r.width, r.height) + 110);
     ripple(e.clientX, e.clientY, size, ringColour(hit));
     // The ripple nudges what's around it as it passes.
-    const R = size * 0.75 + 60;
+    const R = size * 0.9 + 120;
     for (const n of document.querySelectorAll(NEAR)) {
       if (chain.includes(n) || n.contains(hit)) continue;
       const b = n.getBoundingClientRect();
       if (b.bottom < 0 || b.top > innerHeight || !b.width) continue;
       const dx = Math.max(b.left - e.clientX, 0, e.clientX - b.right), dy = Math.max(b.top - e.clientY, 0, e.clientY - b.bottom);
       const d = Math.hypot(dx, dy);
-      if (d < R) setTimeout(() => n.isConnected && push(n, 0.5 * (1 - d / R), false), d * 1.7);
+      if (d < R) setTimeout(() => n.isConnected && push(n, 0.8 * (1 - d / R), false), d * 1.5);
     }
   }, { passive: true });
   const release = () => {
-    for (const s of springs.values()) if (s.held) { s.held = false; s.ut = 1; s.jv -= 6 * s.amp; }
+    for (const s of springs.values()) if (s.held) { s.held = false; s.ut = 1; s.uv += 2.5 * s.amp; s.jv -= 9 * s.amp; }
     run();
   };
   document.addEventListener("pointerup", release);
   document.addEventListener("pointercancel", release);
   window.addEventListener("blur", release);
-  return { push };
+  // Hovering gives things a little wobble.
+  document.addEventListener("pointerover", (e) => {
+    if (calm() || e.pointerType === "touch") return;
+    const n = e.target.closest(".btn, .link, .chip, .check, .nav-item, .day, .dose, .ask, .x, .brand img, .side-row");
+    if (!n || (e.relatedTarget && n.contains(e.relatedTarget))) return;
+    push(n, 0.35, false);
+  });
+  // Scrolling sloshes the cards like jelly in a bowl.
+  let lastSlosh = 0;
+  document.addEventListener("wheel", (e) => {
+    if (calm() || performance.now() - lastSlosh < 70) return;
+    lastSlosh = performance.now();
+    const p = Math.max(-0.7, Math.min(0.7, e.deltaY / 250));
+    for (const n of document.querySelectorAll("#page .card")) {
+      const b = n.getBoundingClientRect();
+      if (b.bottom > 0 && b.top < innerHeight) push(n, p, false);
+    }
+  }, { passive: true });
+  // A freshly opened page pops in with a boing, one card after another.
+  function pop(root) {
+    if (calm()) return;
+    [...root.querySelectorAll(".card, .item, .day, .side-row")].slice(0, 60).forEach((n, i) => {
+      const s = spring(n);
+      s.u = 0.82; s.uv = 0; s.j = -0.6; s.jv = 4;
+      n.style.transform = "scale(.82)";
+      setTimeout(run, 0);
+      if (i) { s.u = 0.82; s.ut = 0.82; setTimeout(() => { s.ut = 1; run(); }, Math.min(i * 28, 420)); }
+    });
+    run();
+  }
+  // Everything breathes a tiny bit on its own, each at its own pace.
+  function breathe(root) {
+    root.querySelectorAll(".card, .nav-dot, .check, .day").forEach((n) => { n.style.animationDelay = (-Math.random() * 6).toFixed(2) + "s"; });
+  }
+  return { push, pop, breathe };
 })();
