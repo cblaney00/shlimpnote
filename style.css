@@ -1,4 +1,5 @@
 /* ShlimpNote — soft pastel look. Colours live here as tokens. */
+@font-face { font-family: "Nunito"; src: url("fonts/nunito.woff2") format("woff2"); font-weight: 400 800; font-display: swap; }
 :root {
   --bg: #fbf8fc;
   --surface: #ffffff;
@@ -38,7 +39,7 @@ html, body { margin: 0; height: 100%; }
 body {
   background: var(--bg);
   color: var(--ink);
-  font-family: "Segoe UI Variable Text", "Segoe UI", system-ui, -apple-system, "Helvetica Neue", Arial, sans-serif;
+  font-family: "Nunito", "Segoe UI Variable Text", "Segoe UI", system-ui, -apple-system, "Helvetica Neue", Arial, sans-serif;
   font-size: 1rem;
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
@@ -115,10 +116,10 @@ button { cursor: pointer; }
 .btn {
   border: 0; border-radius: 10px; padding: 9px 18px;
   background: var(--accent); color: #fff; font-weight: 600;
-  transition: background .15s var(--ease), transform .1s;
+  transition: background .15s var(--ease);
 }
 .btn:hover { background: var(--accent-deep); }
-.btn:active { transform: scale(.97); }
+
 .btn:disabled { background: var(--faint); cursor: default; }
 .btn.soft { background: var(--hover); color: var(--ink); font-weight: 500; }
 .btn.soft:hover { background: var(--lilac); }
@@ -230,10 +231,10 @@ button { cursor: pointer; }
   border: 1.5px solid transparent; border-radius: 12px;
   background: var(--bg); display: flex; align-items: flex-start; justify-content: flex-end;
   padding: 6px 8px; font-size: .95rem; position: relative;
-  transition: background .18s var(--ease), border-color .18s, transform .1s;
+  transition: background .18s var(--ease), border-color .18s;
 }
 .day:hover { border-color: var(--peri); }
-.day:active { transform: scale(.96); }
+
 .day.out { opacity: .35; }
 .day.today { border-color: var(--accent); font-weight: 700; }
 .day.f1 { background: var(--peri-light); }
@@ -246,6 +247,7 @@ button { cursor: pointer; }
 
 /* ---------- Notes & journal ---------- */
 .split { display: grid; grid-template-columns: minmax(220px, 300px) 1fr; gap: 18px; align-items: start; }
+.split.cycle-split { grid-template-columns: 1fr minmax(220px, 280px); }
 .side-list { display: flex; flex-direction: column; gap: 4px; }
 .side-row {
   border: 0; background: transparent; text-align: left; border-radius: 11px;
@@ -294,9 +296,99 @@ button { cursor: pointer; }
   .ask { margin: 0; padding: 8px 12px; white-space: nowrap; }
   #page-head { padding: 20px 16px 4px; }
   #page { padding: 12px 16px 40px; }
-  .split { grid-template-columns: 1fr; }
+  .split, .split.cycle-split { grid-template-columns: 1fr; }
+  .cal { gap: 4px; }
+  .day { padding: 4px 6px; border-radius: 14px; }
 }
 
 @media (prefers-reduced-motion: reduce) {
   * { animation: none !important; transition: none !important; }
 }
+
+/* =====================================================================
+   Squishy look (his ask, 2026-11-10: "a lot more cute and squishy looking").
+   Same colours as before — only rounder, puffier shapes with soft highlights,
+   like little jelly sweets. The bounce itself is in app.js (Squish).
+   ===================================================================== */
+:root {
+  --radius: 24px;
+  --puff: inset 0 2px 0 rgba(255, 255, 255, .95), inset 0 -3px 0 rgba(150, 120, 190, .10),
+          0 8px 22px rgba(120, 90, 170, .10), 0 2px 5px rgba(120, 90, 170, .07);
+  --puff-small: inset 0 2px 0 rgba(255, 255, 255, .85), inset 0 -2px 0 rgba(120, 90, 170, .14),
+                0 3px 8px rgba(120, 90, 170, .14);
+}
+body { font-weight: 500; letter-spacing: .1px; }
+.brand { font-weight: 800; font-size: 1.4rem; }
+.brand img { filter: drop-shadow(0 3px 6px rgba(200, 120, 160, .25)); }
+#page-title { font-weight: 800; letter-spacing: 0; }
+.card h2 { font-weight: 800; }
+.big-num, .med-name, .goal-title, .title-in { font-weight: 800; }
+
+.card {
+  border-radius: var(--radius);
+  background: linear-gradient(180deg, #ffffff 0%, #fdfaff 100%);
+  box-shadow: var(--puff);
+}
+.nav-item { border-radius: 999px; padding: 10px 16px; }
+.nav-item.on { background: linear-gradient(180deg, #fff, #fbf7ff); box-shadow: var(--puff-small); font-weight: 800; }
+.nav-dot {
+  width: 16px; height: 16px;
+  box-shadow: inset 0 -2px 2px rgba(0, 0, 0, .07), inset 0 2px 2px rgba(255, 255, 255, .8), 0 1px 3px rgba(120, 90, 170, .18);
+}
+.card h2 .nav-dot { width: 14px; height: 14px; }
+.ask { border-radius: 999px; border-width: 2px; }
+
+.btn {
+  border-radius: 999px; padding: 10px 22px; font-weight: 800;
+  background: linear-gradient(180deg, #cbb4ec 0%, var(--accent) 100%);
+  box-shadow: inset 0 2px 0 rgba(255, 255, 255, .45), inset 0 -3px 0 rgba(110, 70, 170, .18), 0 4px 10px rgba(143, 111, 196, .30);
+}
+.btn:hover { background: linear-gradient(180deg, #c2a8ea 0%, #a888d8 100%); }
+.link, .chip {
+  border-radius: 999px; border: 0; padding: 5px 15px;
+  background: linear-gradient(180deg, #fff, #f8f3fc);
+  box-shadow: var(--puff-small);
+}
+.link:hover, .chip:hover { background: linear-gradient(180deg, #fff, var(--hover)); }
+.chip.on { background: linear-gradient(180deg, #e6dcf8, var(--lavender)); }
+
+.field, .grow { border-radius: 18px; border-width: 2px; box-shadow: inset 0 2px 4px rgba(120, 90, 170, .06); }
+
+.check {
+  width: 28px; height: 28px; border-width: 2.5px;
+  background: radial-gradient(circle at 35% 30%, #fff, #f6f1fa);
+  box-shadow: 0 2px 4px rgba(120, 90, 170, .12);
+}
+.check.on {
+  background: radial-gradient(circle at 35% 30%, #d4c0f2, var(--accent));
+  box-shadow: inset 0 2px 0 rgba(255, 255, 255, .45), 0 3px 8px rgba(143, 111, 196, .35);
+}
+.item { border-radius: 18px; }
+.undo { border-radius: 18px; }
+
+.dose { border: 0; border-radius: 999px; padding: 8px 18px 8px 10px; background: linear-gradient(180deg, #fff, #f7fbf9); box-shadow: var(--puff-small); }
+.dose.on { background: linear-gradient(180deg, #dcf5e9, var(--mint)); }
+.dose.on .check { background: radial-gradient(circle at 35% 30%, #a8dfc4, #7cc5a2); border-color: #7cc5a2; }
+.week span { border-radius: 50%; }
+
+.day { border-radius: 18px; box-shadow: inset 0 2px 0 rgba(255, 255, 255, .9), inset 0 -2px 0 rgba(120, 90, 170, .06); }
+.day.f1, .day.f2, .day.f3 { box-shadow: inset 0 2px 0 rgba(255, 255, 255, .55), inset 0 -3px 0 rgba(80, 70, 170, .12), 0 3px 8px rgba(120, 120, 220, .22); }
+
+.side-row { border-radius: 18px; }
+.side-row.on { background: linear-gradient(180deg, #fff, #fbf7ff); box-shadow: var(--puff-small); }
+.bar { height: 14px; box-shadow: inset 0 2px 3px rgba(120, 90, 170, .12); }
+.bar > div { box-shadow: inset 0 2px 0 rgba(255, 255, 255, .5); }
+.x { border-radius: 50%; }
+.tag { border-radius: 999px; padding: 2px 12px; }
+
+/* Squish: springy elements are scaled from their middle by app.js. */
+.sq { transform-origin: 50% 60%; backface-visibility: hidden; }
+/* Soft rings that spread out from a click into the space around it. */
+.ripple {
+  position: fixed; left: 0; top: 0; pointer-events: none; z-index: 50;
+  border-radius: 50%; border: 2.5px solid var(--ring, rgba(184, 156, 224, .55));
+  transform: translate(-50%, -50%) scale(.2); opacity: .9;
+  animation: ripple .8s cubic-bezier(.2, .7, .3, 1) forwards;
+}
+.ripple.fill { border: 0; background: radial-gradient(circle, var(--ring, rgba(184, 156, 224, .35)) 0%, transparent 70%); animation-duration: .6s; }
+@keyframes ripple { to { transform: translate(-50%, -50%) scale(1); opacity: 0; } }

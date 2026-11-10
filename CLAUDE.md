@@ -48,6 +48,25 @@ VibeNote (`../vibenote/CLAUDE.md`):
   `shlimpnote`). Firefox still adds " — Mozilla Firefox" to the window title; nothing in a
   profile can remove that. `<meta name="darkreader-lock">` stops his system-wide Dark Reader
   from darkening it, and `color-scheme: light only` keeps it pastel in dark mode.
+- 2026-11-10, his words: "i liked the colors from before but i just didnt like the red on
+  cycle because the would remind her of blood which is the last thing she wants to think
+  about on her period". **Keep the palette as is; nothing on Cycle may look red or
+  blood-like** (no rose/pink/red there). Periwinkle for now; he was asked if it feels right.
+- 2026-11-10, his ask: "a lot more cute and squishy looking, clicking on an area should
+  squeeze or squish it and it should bounce or jiggle a bit, if clicked repeatedly it should
+  not hard restart the animation, it should be smooth with a rippling effect [in] the space
+  around it". Done as: rounded **Nunito** font (bundled, `docs/credits.md`), pill buttons,
+  puffy cards with soft top highlight (`--puff`), bubble dots; **`Squish`** in `app.js`:
+  each pressed thing has a spring (squeeze while held + jelly wobble); clicks *add* velocity,
+  never reset, so rapid clicks blend; parents wobble less; two soft rings + a glow spread
+  from the click (`.ripple`, colour of what was clicked; Cycle = periwinkle) and nudge
+  nearby things as the ring reaches them. Springs carry over a page redraw by `data-key`/
+  `data-id`/`data-go` (`keyOf`). Never use CSS `:active` transforms or transform transitions
+  on these elements — they fight the spring. Text boxes never squish.
+- 2026-11-10, his ask: "available as an app on her phone". Same web app: on Android Chrome
+  "Install app"/"Add to Home screen", on iPhone Safari Share → "Add to Home Screen". Under
+  760 px the sidebar is a scrolling row of pills at the top; Cycle stacks (`.cycle-split`).
+  Her phone and PC keep **separate** data until there is syncing (not built; asked him).
 Ask him before changing the look.
 
 ## How it is built

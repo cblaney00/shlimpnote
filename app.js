@@ -217,7 +217,7 @@ function itemRow(items, it, opts) {
     it.done = !it.done;
     it.doneOn = it.done ? dayKey() : null;
     $(".check", row).classList.toggle("on", it.done);
-    setTimeout(refresh, 260); // let the tick show before the row moves
+    setTimeout(refresh, 420); // let the tick bounce before the row moves
   });
   editable($(".text", row), it.text, (v) => { it.text = v; refresh(); });
   const rep = $("[data-repeat]", row);
@@ -272,7 +272,7 @@ function toggleDose(m, t, k = dayKey()) {
 }
 function doseButton(m, t) {
   const on = !!(S.medLog[dayKey()] || {})[m.id + "|" + t];
-  const b = h(`<button class="dose ${on ? "on" : ""}"><span class="check ${on ? "on" : ""}"></span>${esc(t)}</button>`);
+  const b = h(`<button data-key="dose-${m.id}-${t}" class="dose ${on ? "on" : ""}"><span class="check ${on ? "on" : ""}"></span>${esc(t)}</button>`);
   b.addEventListener("click", () => {
     toggleDose(m, t);
     b.classList.toggle("on"); $(".check", b).classList.toggle("on");
@@ -401,7 +401,7 @@ VIEWS.meds = (el) => {
       <div class="row"><span class="muted">When:</span><span class="row" data-times></span><button class="btn" style="margin-left:auto">Add</button></div>
     </div>`);
   TIMES.forEach((t) => {
-    const c = h(`<button class="chip ${pick.has(t) ? "on" : ""}">${t}</button>`);
+    const c = h(`<button data-key="time-${t}" class="chip ${pick.has(t) ? "on" : ""}">${t}</button>`);
     c.addEventListener("click", () => { pick.has(t) ? pick.delete(t) : pick.add(t); c.classList.toggle("on"); });
     $("[data-times]", add).appendChild(c);
   });
@@ -445,7 +445,7 @@ VIEWS.cycle = (el) => {
   const info = cycleInfo();
   const guess = predicted(info);
   const shown = S.ui.calMonth ? parseDay(S.ui.calMonth) : new Date(new Date().getFullYear(), new Date().getMonth(), 1);
-  const wrap = h(`<div class="split" style="grid-template-columns: 1fr minmax(220px, 280px)"></div>`);
+  const wrap = h(`<div class="split cycle-split"></div>`);
 
   const cal = h(`<div class="card">
       <div class="cal-head"><button class="link" data-prev>‹</button><h2>${shown.toLocaleDateString(undefined, { month: "long", year: "numeric" })}</h2><button class="link" data-next>›</button></div>
@@ -461,7 +461,7 @@ VIEWS.cycle = (el) => {
   for (let i = 0; i < 42; i++) {
     const k = dayKey(d);
     const f = S.cycle.flow[k] || 0;
-    const cell = h(`<button class="day ${d.getMonth() !== shown.getMonth() ? "out" : ""} ${k === today ? "today" : ""} ${f ? "f" + f : ""} ${!f && guess.has(k) ? "guess" : ""}">${d.getDate()}</button>`);
+    const cell = h(`<button data-key="day-${k}" class="day ${d.getMonth() !== shown.getMonth() ? "out" : ""} ${k === today ? "today" : ""} ${f ? "f" + f : ""} ${!f && guess.has(k) ? "guess" : ""}">${d.getDate()}</button>`);
     cell.addEventListener("click", () => {
       const v = ((S.cycle.flow[k] || 0) + 1) % 4;
       if (v) S.cycle.flow[k] = v; else delete S.cycle.flow[k];
@@ -506,7 +506,7 @@ VIEWS.notes = (el) => {
     listEl.innerHTML = "";
     if (!notes.length) listEl.appendChild(h(`<div class="empty">${S.notes.length ? "No notes match." : "No notes yet."}</div>`));
     notes.forEach((n) => {
-      const r = h(`<button class="side-row ${n.id === S.ui.note ? "on" : ""}"><b>${n.pinned ? "📌 " : ""}${esc(n.title || "Untitled")}</b><span>${esc(n.body.split("\n")[0] || fmtTime(n.updated))}</span></button>`);
+      const r = h(`<button data-key="note-${n.id}" class="side-row ${n.id === S.ui.note ? "on" : ""}"><b>${n.pinned ? "📌 " : ""}${esc(n.title || "Untitled")}</b><span>${esc(n.body.split("\n")[0] || fmtTime(n.updated))}</span></button>`);
       r.addEventListener("click", () => { S.ui.note = n.id; refresh(); });
       listEl.appendChild(r);
     });
@@ -604,7 +604,7 @@ VIEWS.journal = (el) => {
   keys.sort().reverse().forEach((d) => {
     const e = S.journal[d] || {};
     const mood = MOODS.find((m) => m[0] === e.mood);
-    const r = h(`<button class="side-row ${d === k ? "on" : ""}"><b>${mood ? `<i style="display:inline-block;width:10px;height:10px;border-radius:50%;background:${mood[1]};margin-right:6px"></i>` : ""}${d === today ? "Today" : fmtDay(d)}</b><span>${esc((e.text || "").split("\n")[0] || "Nothing written yet")}</span></button>`);
+    const r = h(`<button data-key="jday-${d}" class="side-row ${d === k ? "on" : ""}"><b>${mood ? `<i style="display:inline-block;width:10px;height:10px;border-radius:50%;background:${mood[1]};margin-right:6px"></i>` : ""}${d === today ? "Today" : fmtDay(d)}</b><span>${esc((e.text || "").split("\n")[0] || "Nothing written yet")}</span></button>`);
     r.addEventListener("click", () => { S.ui.jday = d; refresh(); });
     side.appendChild(r);
   });
@@ -617,7 +617,7 @@ VIEWS.journal = (el) => {
       <textarea class="body-in" placeholder="How was your day?"></textarea>
     </div>`);
   MOODS.forEach(([name, color]) => {
-    const b = h(`<button class="chip mood ${entry.mood === name ? "on" : ""}"><i style="background:${color}"></i>${name}</button>`);
+    const b = h(`<button data-key="mood-${name}" class="chip mood ${entry.mood === name ? "on" : ""}"><i style="background:${color}"></i>${name}</button>`);
     b.addEventListener("click", () => {
       entry.mood = entry.mood === name ? "" : name;
       S.journal[k] = entry;
@@ -725,3 +725,110 @@ document.addEventListener("visibilitychange", () => {
 if ("serviceWorker" in navigator && location.protocol !== "file:") {
   navigator.serviceWorker.register("sw.js").catch(() => {});
 }
+
+/* ---------------- Squish ----------------
+   His ask (2026-11-10): clicking squeezes things, they bounce and jiggle, and clicking
+   again never restarts the animation — every click just adds a push to a spring that is
+   already moving, so repeated clicks blend smoothly. Soft rings ripple out from the click
+   and give nearby things a little wobble as the ripple passes them. */
+const Squish = (() => {
+  const SEL = "button, .card, .item, .dose, .day, .brand img, .side-row, .bar";
+  const NEAR = ".card, .item, .dose, .day, .nav-item, .chip, .check, .side-row, .btn, .link, .ask, .brand img";
+  const springs = new Map(); // element -> its spring
+  let raf = 0, last = 0;
+  const calm = () => matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  // A way to find "the same" element again after a page redraw replaces it.
+  function keyOf(el) {
+    for (const a of ["id", "go", "key"]) if (el.dataset && el.dataset[a]) return `[data-${a}="${CSS.escape(el.dataset[a])}"]`;
+    const anc = el.parentElement && el.parentElement.closest("[data-id],[data-go],[data-key]");
+    return anc && el.classList[0] ? `${keyOf(anc)} .${el.classList[0]}` : null;
+  }
+  function spring(el) {
+    let s = springs.get(el);
+    if (!s) {
+      const r = el.getBoundingClientRect();
+      // Small things squish a lot, big cards just a little.
+      const amp = Math.max(0.2, Math.min(1, 70 / Math.sqrt(Math.max(1, r.width * r.height))));
+      s = { u: 1, uv: 0, ut: 1, j: 0, jv: 0, amp, key: keyOf(el), held: false };
+      springs.set(el, s);
+      el.classList.add("sq");
+    }
+    return s;
+  }
+  function run() { if (!raf) { last = performance.now(); raf = requestAnimationFrame(step); } }
+  function step(t) {
+    const dt = Math.min(0.033, (t - last) / 1000); last = t;
+    for (let [el, s] of [...springs]) {
+      if (!el.isConnected) {               // redrawn: carry the wobble over to the new copy
+        springs.delete(el);
+        const n = s.key && document.querySelector(s.key);
+        if (!n || springs.has(n)) continue;
+        el = n; springs.set(n, s); n.classList.add("sq");
+      }
+      s.uv += (-420 * (s.u - s.ut) - 19 * s.uv) * dt; s.u += s.uv * dt;   // squeeze
+      s.jv += (-300 * s.j - 8 * s.jv) * dt; s.j += s.jv * dt;              // jelly wobble
+      s.j = Math.max(-1.3, Math.min(1.3, s.j));
+      const w = 0.11 * s.j;
+      el.style.transform = `scale(${(s.u * (1 + w)).toFixed(4)}, ${(s.u * (1 - w)).toFixed(4)})`;
+      if (!s.held && Math.abs(s.u - 1) < 4e-4 && Math.abs(s.uv) < 4e-3 && Math.abs(s.j) < 1e-3 && Math.abs(s.jv) < 1e-2) {
+        el.style.transform = ""; springs.delete(el);
+      }
+    }
+    raf = springs.size ? requestAnimationFrame(step) : 0;
+  }
+  function push(el, power, hold) {
+    const s = spring(el);
+    s.jv = Math.max(-30, Math.min(30, s.jv + 9 * power * s.amp));
+    if (hold) { s.held = true; s.ut = 1 - 0.1 * s.amp; } else s.uv -= 1.2 * power * s.amp;
+    run();
+  }
+  function ringColour(el) {
+    if (el.closest(".day")) return "rgba(156, 163, 234, .55)";
+    if (el.closest(".dose")) return "rgba(124, 197, 162, .55)";
+    const nav = el.closest(".nav-item"); if (nav) return getComputedStyle($(".nav-dot", nav)).backgroundColor;
+    return "rgba(184, 156, 224, .55)";
+  }
+  function ripple(x, y, size, colour) {
+    [[0, ""], [110, ""], [0, "fill"]].forEach(([delay, kind], i) => {
+      const r = document.createElement("div");
+      r.className = "ripple " + kind;
+      const d = size + i * 70;
+      r.style.cssText = `left:${x}px;top:${y}px;width:${d}px;height:${d}px;--ring:${colour};animation-delay:${delay}ms`;
+      if (delay) r.style.opacity = "0", r.style.animationFillMode = "both";
+      r.addEventListener("animationend", () => r.remove());
+      document.body.appendChild(r);
+    });
+  }
+  document.addEventListener("pointerdown", (e) => {
+    if (calm() || e.button > 0) return;
+    if (e.target.closest("input, textarea, .ripple")) return;
+    const hit = e.target.closest(SEL) || e.target.closest(".nav-item, .ask");
+    if (!hit) return;
+    // The thing pressed squeezes; the things it sits inside wobble a little.
+    const chain = [];
+    for (let n = hit; n && chain.length < 3; n = n.parentElement && n.parentElement.closest(SEL)) chain.push(n);
+    chain.forEach((n, i) => push(n, [1, 0.45, 0.2][i], i === 0));
+    const r = hit.getBoundingClientRect();
+    const size = Math.min(420, Math.max(r.width, r.height) + 110);
+    ripple(e.clientX, e.clientY, size, ringColour(hit));
+    // The ripple nudges what's around it as it passes.
+    const R = size * 0.75 + 60;
+    for (const n of document.querySelectorAll(NEAR)) {
+      if (chain.includes(n) || n.contains(hit)) continue;
+      const b = n.getBoundingClientRect();
+      if (b.bottom < 0 || b.top > innerHeight || !b.width) continue;
+      const dx = Math.max(b.left - e.clientX, 0, e.clientX - b.right), dy = Math.max(b.top - e.clientY, 0, e.clientY - b.bottom);
+      const d = Math.hypot(dx, dy);
+      if (d < R) setTimeout(() => n.isConnected && push(n, 0.5 * (1 - d / R), false), d * 1.7);
+    }
+  }, { passive: true });
+  const release = () => {
+    for (const s of springs.values()) if (s.held) { s.held = false; s.ut = 1; s.jv -= 6 * s.amp; }
+    run();
+  };
+  document.addEventListener("pointerup", release);
+  document.addEventListener("pointercancel", release);
+  window.addEventListener("blur", release);
+  return { push };
+})();
