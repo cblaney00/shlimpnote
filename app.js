@@ -452,7 +452,7 @@ VIEWS.cycle = (el) => {
   const cal = h(`<div class="card">
       <div class="cal-head"><button class="link" data-prev>‹</button><h2>${shown.toLocaleDateString(undefined, { month: "long", year: "numeric" })}</h2><button class="link" data-next>›</button></div>
       <div class="cal"></div>
-      <div class="legend"><span><i style="background:var(--peri-light)"></i>Light</span><span><i style="background:var(--peri)"></i>Medium</span><span><i style="background:var(--peri-deep)"></i>Heavy</span><span><i style="border:1.5px dashed var(--peri-line)"></i>Expected</span></div>
+      <div class="legend"><span><i style="background:#8f98ec"></i>Light</span><span><i style="background:#6f79e0"></i>Medium</span><span><i style="background:#4f5acc"></i>Heavy</span><span><i style="border:1.5px dashed var(--peri-line)"></i>Expected</span></div>
       <div class="muted small" style="margin-top:8px">Click a day to mark it. Click again for heavier; a fourth click clears it.</div>
     </div>`);
   const grid = $(".cal", cal);

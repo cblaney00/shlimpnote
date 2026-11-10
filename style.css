@@ -560,3 +560,76 @@ body {
 @media (max-width: 760px), (hover: none) {
   .card, .check, .day, .nav-dot, .brand img { animation: none; }
 }
+
+/* =====================================================================
+   Darker pastels (his ask, 2026-11-10: "darker pastels, i should not be thinking
+   'hmm thats too white/washed out'"). Deeper, richer versions of the same colours,
+   and far less white mixed in or shining on top.
+   ===================================================================== */
+:root {
+  --lavender: #b9a0ec;
+  --mint: #93d9b8;
+  --peri: #9fa7f0;       /* Cycle — still nothing red */
+  --peri-light: #c3c8f6;
+  --peri-deep: #7b84e2;
+  --peri-line: #6a73d6;
+  --butter: #f5d06a;
+  --peach: #f7ae86;
+  --sky: #8fc3ee;
+  --lilac: #cfa4ea;
+  --blush: #f2a7c0;
+  --accent: #a183dc;
+  --accent-deep: #7c5cc0;
+  --ink: #3a3248;
+  --muted: #5e5470;
+  --gloss: radial-gradient(130% 70% at 25% -10%, rgba(255, 255, 255, .45) 0 25%, rgba(255, 255, 255, 0) 60%);
+  --dots: radial-gradient(circle, rgba(255, 255, 255, .32) 0 2px, transparent 2.6px);
+}
+body {
+  background:
+    var(--grain),
+    var(--dots) 0 0 / 26px 26px,
+    radial-gradient(700px 520px at 100% 0%, var(--blush), transparent 70%),
+    radial-gradient(700px 600px at 0% 100%, var(--mint), transparent 70%),
+    radial-gradient(600px 500px at 70% 100%, var(--sky), transparent 70%),
+    radial-gradient(600px 500px at 35% 30%, color-mix(in srgb, var(--tone) 70%, var(--lavender)), transparent 75%),
+    #c9b3ec;
+  background-attachment: fixed;
+}
+#sidebar { background: var(--grain), var(--dots) 0 0 / 22px 22px, linear-gradient(180deg, #b79de9 0%, #ec9fc0 50%, #8fd3b2 100%); }
+.nav-item:hover { background: rgba(255, 255, 255, .25); }
+.card { border-color: rgba(255, 255, 255, .35); }
+.card .muted, .card .small, .muted { color: var(--muted); }
+.btn, .link, .chip, .dose { border-color: rgba(255, 255, 255, .45); background: var(--gloss), var(--grain), color-mix(in srgb, var(--tone) 82%, white); }
+.btn { background: var(--gloss), var(--grain), color-mix(in srgb, var(--tone) 70%, #8f6fc4); }
+.btn:hover, .link:hover, .chip:hover { background: var(--gloss), var(--grain), color-mix(in srgb, var(--tone) 80%, #8f6fc4); }
+.chip.on, .dose.on { background: var(--gloss), var(--grain), color-mix(in srgb, var(--tone) 60%, #7c5cc0); color: #fff; }
+.dose.on { background: var(--gloss), var(--grain), #6cc79c; color: #fff; }
+.dose.on .check { background: radial-gradient(circle at 35% 30%, #fff 0 14%, #4fae82 50%); border-color: rgba(255, 255, 255, .8); }
+.check { background: radial-gradient(circle at 35% 30%, rgba(255, 255, 255, .9) 0 14%, color-mix(in srgb, var(--tone) 75%, white) 60%); }
+.check.on { background: radial-gradient(circle at 35% 30%, #fff 0 12%, color-mix(in srgb, var(--tone) 40%, #7c5cc0) 50%); }
+.field, .grow { background: var(--grain), color-mix(in srgb, var(--tone) 35%, white); border-color: rgba(255, 255, 255, .5); }
+.field:focus, .grow:focus { background: color-mix(in srgb, var(--tone) 22%, white); }
+.field::placeholder, .grow::placeholder, .body-in::placeholder, .title-in::placeholder { color: color-mix(in srgb, var(--muted) 80%, var(--tone)); }
+.item:hover, .side-row:hover { background: rgba(255, 255, 255, .2); }
+.side-row.on { background: var(--gloss), var(--grain), color-mix(in srgb, var(--tone) 55%, white); }
+.day { background: var(--grain), color-mix(in srgb, var(--tone) 45%, white); border-color: rgba(255, 255, 255, .45); }
+.day.f1 { background: var(--gloss), var(--grain), #b4baf3; }
+.day.f2 { background: var(--gloss), var(--grain), #8790e6; color: #fff; }
+.day.f3 { background: var(--gloss), var(--grain), #626cd6; color: #fff; }
+.day.today { border-color: #4f58c8; }
+.bar { background: var(--grain), color-mix(in srgb, var(--tone) 40%, white); }
+.bar > div { background: var(--gloss), var(--grain), linear-gradient(90deg, #ec8fb2, #b28ae6, #7f88e0); }
+.week span { background: var(--grain), color-mix(in srgb, var(--tone) 40%, white); }
+.week span.full { background: var(--gloss), #6cc79c; color: #fff; }
+.undo, .ask { background: var(--grain), rgba(255, 255, 255, .3); }
+.tag.waiting { background: var(--butter); } .tag.sent { background: var(--sky); } .tag.done { background: var(--mint); }
+@media (max-width: 760px) { #sidebar { background: var(--grain), linear-gradient(90deg, #b79de9, #ec9fc0, #8fd3b2); } }
+.day { background: var(--grain), color-mix(in srgb, var(--tone) 72%, white); }
+.day.out { opacity: .45; }
+.bar { background: var(--grain), color-mix(in srgb, var(--tone) 65%, white); border-color: rgba(255, 255, 255, .4); }
+.week span { background: var(--grain), color-mix(in srgb, var(--tone) 65%, white); }
+.check { background: radial-gradient(circle at 35% 30%, rgba(255, 255, 255, .85) 0 12%, color-mix(in srgb, var(--tone) 85%, white) 55%); }
+.day.f1 { background: var(--gloss), var(--grain), #8f98ec; color: #fff; }
+.day.f2 { background: var(--gloss), var(--grain), #6f79e0; color: #fff; }
+.day.f3 { background: var(--gloss), var(--grain), #4f5acc; color: #fff; }

@@ -89,6 +89,12 @@ VibeNote (`../vibenote/CLAUDE.md`):
   always-on breathing and no hover wobble; taps still squish. **Syncing between her PC and
   phone is wanted** (on open and on refresh) — not built yet; needs an online place for
   her data (asked him).
+- 2026-11-10, his words: "darker pastels, i should not be thinking 'hmm thats too
+  white/washed out'". The colour tokens were deepened (last blocks of `style.css` override
+  the ones at the top) and white was cut almost everywhere: less gloss, fainter dots,
+  fields/days/bars/chips mixed with the page colour instead of white. Period days are
+  clearly deeper periwinkle with white numbers. **Rule from now on: if anything reads as
+  white or washed out, it's wrong.**
 Ask him before changing the look.
 
 ## How it is built
