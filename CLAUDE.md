@@ -134,12 +134,30 @@ Ask him before changing the look.
 - **A web app (HTML/CSS/plain JavaScript, no libraries, no build step)**, so she can
   install it on Windows from Edge ("Install ShlimpNote") and it then behaves like a
   normal app (Start menu, taskbar, own window). Dev shell: `vibe-web`.
-- Hosted on **GitHub Pages** (not set up yet — needs his OK to make the repo).
-  `sw.js` (service worker) fetches every file fresh from the site each time it opens
-  online and falls back to the saved copy offline — that is the auto-update.
-- Her data: browser `localStorage` key `shlimpnote.v1` on her computer only
-  (`navigator.storage.persist()` asks the browser not to clear it). Nothing of hers is
-  ever sent anywhere except the change requests.
+- **Live at https://cblaney00.github.io/shlimpnote/** — GitHub Pages from `main` of the
+  **public** repo **github.com/cblaney00/shlimpnote** (his OK, 2026-11-10). **Push `main` after
+  every commit** (`sudo -u insideabush -H git push`, after the chown): that push is both the
+  backup and the release — her installed app picks it up the next time she opens it.
+  `sw.js` (service worker) fetches every file fresh each time the app opens online and
+  falls back to the saved copy offline.
+- Her data: browser `localStorage` key `shlimpnote.v1` on each device, **synced** through
+  `data.json` in the **private** repo **github.com/cblaney00/shlimpnote-data** (sync module
+  in `app.js`: `syncNow`, `merge3`). Syncs on open, when she returns to the app, when back
+  online, and 2.5 s after any change. Three-way merge against the last synced copy
+  (`shlimpnote.base`): changes on both devices survive; same field changed on both → this
+  device wins; an edit beats a delete. Never swaps data while a text box is focused (retries).
+  `ui` is never synced. Tested against the real repo 2026-11-10 (node harness, test file
+  removed afterwards).
+- **Connect code** = a fine-grained GitHub token (Contents + Issues read/write on
+  shlimpnote-data only) that **he** makes on github.com; it is stored only on her devices
+  (`localStorage` `shlimpnote.key`), entered on the "Your devices" page (tap the line under
+  Ask for a change) or via `…/shlimpnote/#connect=CODE`. **Never put it in this repo** — the
+  repo is public. The manual tells him how to make one.
+- "Ask for a change" requests become issues (label `from-shlimpnote`) in shlimpnote-data;
+  a closed issue shows as Done in her app. To work on them:
+  `sudo -u insideabush -H gh issue list --repo cblaney00/shlimpnote-data`.
+- **Instruction manual**: `~/Downloads/ShlimpNote-Manual.html` (made 2026-11-10 by a
+  script, pictures embedded). Regenerate it if installing/connecting changes.
 - Files: `index.html` (shell), `style.css` (all looks), `scene.js` (the jungle and creatures, SVG), `app.js` (everything else: store,
   pages as `VIEWS.<page>`, checklist/edit/undo helpers, change requests),
   `config.js` (`repo` + `key` for change requests: a fine-grained GitHub token that can
