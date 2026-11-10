@@ -79,6 +79,7 @@ function drawNav() {
       <span class="nav-count">${counts(p.id)}</span>
     </button>`).join("");
   $("#ask-btn").classList.toggle("on", current === "ask");
+  if (window.Squish) Squish.breathe($("#sidebar"));
 }
 
 function go(id) {
@@ -893,7 +894,12 @@ window.Squish = (() => {
   }
   // Everything breathes a tiny bit on its own, each at its own pace.
   function breathe(root) {
-    root.querySelectorAll(".card, .nav-dot, .check, .day").forEach((n) => { n.style.animationDelay = (-Math.random() * 6).toFixed(2) + "s"; });
+    root.querySelectorAll(".card, .nav-dot, .check, .day, .btn, .link, .chip, .dose, .feel, .nav-item, .ask, .side-row, .j-emoji, .x").forEach((n) => {
+      if (n.dataset.goo) return;                       // keep its pace across redraws of the same element
+      n.dataset.goo = 1;
+      n.style.animationDelay = (-Math.random() * 12).toFixed(2) + "s";
+      n.style.setProperty("--md", (5.5 + Math.random() * 6).toFixed(2) + "s");
+    });
   }
   return { push, pop, breathe };
 })();

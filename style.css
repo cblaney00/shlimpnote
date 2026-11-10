@@ -696,3 +696,152 @@ body {
   .scene * { animation: none !important; }
   .wander { display: none; }
 }
+
+/* =====================================================================
+   Jungle + 3D + goo (her/his asks, 2026-11-10): "she doesnt like the dots", "like a jungle
+   canopy (jungle mushrooms instead) ... more types of creatures ... a lot more fluffy and
+   not smooth like paper cutouts", "everything in this app should be very 3D", and "the
+   buttons ... should maintain position but their shapes should be moving and bending like
+   they are globs of colored jelly in an invisible highly viscous liquid".
+   ===================================================================== */
+:root { --dots: linear-gradient(transparent, transparent); }   /* no more dots, anywhere */
+
+/* Jungle air: green shade under the canopy, lavender mist in the middle, mossy floor. */
+body {
+  background:
+    var(--grain),
+    radial-gradient(900px 500px at 50% 0%, #6fb594, transparent 70%),
+    radial-gradient(800px 600px at 15% 55%, #b8a0ec, transparent 70%),
+    radial-gradient(800px 600px at 90% 60%, #9fc2ef, transparent 70%),
+    linear-gradient(180deg, #7fbf9f 0%, #a996e0 45%, #9a8ad8 70%, #78bb98 100%);
+  background-attachment: fixed;
+}
+#sidebar { background: var(--grain), linear-gradient(180deg, #8fcfac 0%, #b79de9 45%, #ec9fc0 100%); }
+@media (max-width: 760px) { #sidebar { background: var(--grain), linear-gradient(90deg, #8fcfac, #b79de9, #ec9fc0); } }
+
+.scene { position: absolute; z-index: 0; pointer-events: none; left: clamp(200px, 22vw, 260px); right: 0; }
+.scene svg { width: 100%; height: 100%; display: block; overflow: visible; }
+.scene-top { top: 0; height: min(400px, 52vh); }
+.scene-floor { bottom: 0; height: min(340px, 42vh); }
+#page-head { padding-top: clamp(90px, 13vh, 130px); }
+#page { padding-bottom: min(320px, 40vh); }
+
+/* Sun rays slanting through the leaves, slowly brightening and fading. */
+.jungle-sky { position: absolute; inset: 0 0 0 clamp(200px, 22vw, 260px); z-index: 0; pointer-events: none; overflow: hidden; }
+.jungle-sky i {
+  position: absolute; top: -10%; width: 14%; height: 90%;
+  background: linear-gradient(180deg, rgba(255, 252, 220, .55), rgba(255, 252, 220, 0));
+  transform: skewX(-18deg); filter: blur(14px); animation: ray 9s ease-in-out infinite alternate;
+}
+.jungle-sky i:nth-child(1) { left: 18%; animation-delay: -2s; }
+.jungle-sky i:nth-child(2) { left: 46%; width: 9%; animation-delay: -5s; animation-duration: 11s; }
+.jungle-sky i:nth-child(3) { left: 72%; width: 12%; animation-duration: 13s; }
+@keyframes ray { from { opacity: .25; } to { opacity: .8; } }
+
+/* creatures and plants */
+.sway-top { transform-box: fill-box; transform-origin: 50% 0%; animation: sway var(--t, 5s) ease-in-out infinite alternate; }
+.swing { transform-box: view-box; transform-origin: 0 -270px; animation: swing 7s ease-in-out infinite alternate; }
+@keyframes swing { from { transform: rotate(-5deg); } to { transform: rotate(5deg); } }
+.hang-tail { transform-box: fill-box; transform-origin: 50% 0%; animation: sway 3.2s ease-in-out infinite alternate; }
+.hop { animation: hop 5.5s ease-in-out infinite; }
+@keyframes hop { 0%, 70%, 100% { transform: translateY(0) scale(1, 1); } 74% { transform: translateY(0) scale(1.08, .9); } 80% { transform: translateY(-16px) scale(.94, 1.08); } 86% { transform: translateY(0) scale(1.1, .88); } 90% { transform: scale(1, 1); } }
+.ear.l { transform-box: fill-box; transform-origin: 50% 100%; animation: twitch 4s ease-in-out infinite; }
+@keyframes twitch { 0%, 88%, 100% { rotate: 0deg; } 92% { rotate: -14deg; } 96% { rotate: 6deg; } }
+.bobble { animation: bobble 2.4s ease-in-out infinite; }
+@keyframes bobble { 0%, 100% { transform: translateY(0) rotate(0); } 50% { transform: translateY(-3px) rotate(-4deg); } }
+.wing { transform-box: fill-box; transform-origin: 70% 20%; animation: flap 3s ease-in-out infinite; }
+@keyframes flap { 0%, 80%, 100% { rotate: 0deg; } 85%, 95% { rotate: -30deg; } 90% { rotate: 5deg; } }
+.inch { animation: inch 1.4s ease-in-out infinite; }
+@keyframes inch { 0%, 100% { transform: translate(0, 0); } 50% { transform: translate(3px, -4px); } }
+.sleepy .blink, .blink.sleepy { animation-duration: 6s; }
+
+/* ---------- Very 3D ---------- */
+#page-title {
+  background: none; padding: 0; margin-left: 0;
+  color: #fff;
+  text-shadow: 0 1px 0 color-mix(in srgb, var(--tone) 60%, #6b4a98), 0 2px 0 color-mix(in srgb, var(--tone) 55%, #6b4a98),
+               0 3px 0 color-mix(in srgb, var(--tone) 50%, #6b4a98), 0 4px 0 color-mix(in srgb, var(--tone) 45%, #6b4a98),
+               0 5px 0 color-mix(in srgb, var(--tone) 40%, #6b4a98), 0 8px 14px rgba(40, 20, 70, .35);
+  -webkit-text-stroke: 1px color-mix(in srgb, var(--tone) 50%, #6b4a98);
+  font-size: 2.4rem;
+}
+#page-sub { color: #fff; text-shadow: 0 1px 2px rgba(40, 20, 70, .4); font-weight: 700; }
+.brand span { color: #fff; text-shadow: 0 1px 0 #9a7fd0, 0 2px 0 #8c70c6, 0 3px 0 #7e62bc, 0 6px 10px rgba(40, 20, 70, .3); -webkit-text-stroke: .6px #7e62bc; }
+.card h2 { text-shadow: 0 1px 0 rgba(255, 255, 255, .7); }
+.card {
+  border: 0;
+  box-shadow:
+    inset 4px 5px 8px rgba(255, 255, 255, .55),
+    inset -6px -9px 16px color-mix(in srgb, var(--tone) 50%, #4f3480 50%),
+    0 9px 0 color-mix(in srgb, var(--tone) 55%, #5b3f8c),
+    0 12px 2px rgba(60, 40, 100, .12),
+    0 22px 34px rgba(50, 30, 90, .32);
+}
+.btn, .link, .chip, .dose, .feel, .j-emoji {
+  border: 0;
+  box-shadow:
+    inset 2px 3px 4px rgba(255, 255, 255, .7),
+    inset -3px -5px 8px color-mix(in srgb, var(--tone) 45%, #4f3480 55%),
+    0 5px 0 color-mix(in srgb, var(--tone) 50%, #5b3f8c),
+    0 10px 14px rgba(50, 30, 90, .26);
+}
+.nav-item.on {
+  box-shadow: inset 2px 3px 5px rgba(255, 255, 255, .7), inset -3px -5px 8px rgba(70, 40, 120, .28),
+              0 5px 0 color-mix(in srgb, var(--c) 55%, #5b3f8c), 0 10px 16px rgba(50, 30, 90, .26);
+}
+.nav-dot, .card h2 .nav-dot {
+  background-image: radial-gradient(circle at 34% 28%, rgba(255, 255, 255, .95) 0 16%, rgba(255, 255, 255, 0) 42%),
+                    radial-gradient(circle at 62% 72%, rgba(50, 20, 80, .35), rgba(50, 20, 80, 0) 65%) !important;
+  box-shadow: 0 3px 5px rgba(50, 30, 90, .35);
+}
+.check { box-shadow: inset -2px -4px 5px rgba(70, 40, 120, .3), inset 2px 2px 3px rgba(255, 255, 255, .8), 0 4px 0 rgba(70, 40, 120, .2), 0 6px 8px rgba(50, 30, 90, .2); }
+.day { border: 0; box-shadow: inset 2px 3px 4px rgba(255, 255, 255, .6), inset -3px -4px 7px rgba(70, 40, 120, .22), 0 4px 0 rgba(70, 40, 120, .16), 0 7px 10px rgba(50, 30, 90, .16); }
+.field, .grow { box-shadow: inset 3px 5px 9px rgba(60, 30, 100, .22), inset -2px -2px 4px rgba(255, 255, 255, .5); border: 0; }
+.bar { border: 0; box-shadow: inset 2px 4px 6px rgba(60, 30, 100, .25); }
+.bar > div { box-shadow: inset 1px 2px 3px rgba(255, 255, 255, .6), inset -1px -3px 4px rgba(70, 40, 120, .25); }
+.side-row.on { box-shadow: inset 2px 3px 5px rgba(255, 255, 255, .6), inset -3px -5px 8px rgba(70, 40, 120, .2), 0 5px 0 rgba(70, 40, 120, .15), 0 9px 14px rgba(50, 30, 90, .2); }
+
+/* ---------- Goo: shapes slowly bulge and bend like jelly in thick liquid ---------- */
+.card { animation: breathe 4.5s ease-in-out infinite, goo-card var(--md, 9s) ease-in-out infinite alternate; }
+.btn, .link, .chip, .dose, .feel, .nav-item.on, .ask, .side-row.on, .j-emoji, .x {
+  animation: goo var(--md, 7s) ease-in-out infinite alternate, tilt-goo calc(var(--md, 7s) * 1.3) ease-in-out infinite alternate;
+}
+.day { animation: breathe 5s ease-in-out infinite, goo-day var(--md, 8s) ease-in-out infinite alternate; }
+.check { animation: breathe 3s ease-in-out infinite, goo var(--md, 6s) ease-in-out infinite alternate; }
+@keyframes goo {
+  0%   { border-radius: 48% 52% 44% 56% / 58% 46% 54% 42%; }
+  25%  { border-radius: 60% 40% 55% 45% / 45% 60% 40% 55%; }
+  50%  { border-radius: 42% 58% 60% 40% / 52% 40% 60% 48%; }
+  75%  { border-radius: 56% 44% 40% 60% / 40% 56% 46% 60%; }
+  100% { border-radius: 45% 55% 52% 48% / 60% 48% 52% 40%; }
+}
+@keyframes goo-card {
+  0%   { border-radius: 34px 24px 40px 28px / 28px 38px 26px 36px; }
+  33%  { border-radius: 24px 42px 28px 38px / 38px 24px 40px 26px; }
+  66%  { border-radius: 40px 30px 24px 44px / 26px 42px 34px 24px; }
+  100% { border-radius: 28px 38px 42px 24px / 40px 28px 24px 42px; }
+}
+@keyframes goo-day {
+  0%   { border-radius: 40% 55% 45% 50% / 50% 42% 55% 45%; }
+  50%  { border-radius: 55% 40% 52% 42% / 42% 55% 45% 52%; }
+  100% { border-radius: 45% 48% 40% 56% / 55% 45% 50% 40%; }
+}
+@keyframes tilt-goo { from { rotate: -1.4deg; } to { rotate: 1.4deg; } }
+
+/* Phone: still jelly-shaped, but holding still and no scene animation (taps still squish). */
+@media (max-width: 760px) {
+  .scene, .jungle-sky { left: 0; }
+  .scene-top { height: 26vh; } .scene-floor { height: 26vh; }
+  #page-head { padding-top: 70px; }
+  #page { padding-bottom: 28vh; }
+}
+@media (max-width: 760px), (hover: none) {
+  .scene *, .jungle-sky i { animation: none !important; }
+  .wander { display: none; }
+  .card, .btn, .link, .chip, .dose, .feel, .nav-item.on, .ask, .side-row.on, .j-emoji, .x, .day, .check { animation: none !important; }
+  .card { border-radius: 32px 26px 36px 28px / 28px 34px 26px 36px; }
+  .btn, .link, .chip, .dose, .feel { border-radius: 48% 52% 44% 56% / 58% 46% 54% 42%; }
+}
+#sidebar { position: relative; z-index: 3; }
+.scene { overflow: hidden; }
+.scene svg { overflow: hidden; }

@@ -12,120 +12,10 @@
 </head>
 <body>
   <div id="app">
-    <!-- Woodland behind everything (her ask, 2026-11-10): mushrooms, sparkles and fluffy
-         big-eyed weasels. Pure drawing — nothing here can be clicked. -->
-    <div class="scene" aria-hidden="true">
-      <svg viewBox="0 0 1200 360" preserveAspectRatio="xMidYMax slice">
-        <defs>
-          <symbol id="shroom" viewBox="-40 -84 80 86" overflow="visible">
-            <path d="M-9 0 C-12 -20 -8 -38 -6 -46 L6 -46 C8 -38 12 -20 9 0 Z" fill="#f7ead9"/>
-            <path d="M-9 0 C-12 -20 -8 -38 -6 -46 L-2 -46 C-4 -34 -5 -18 -3 0 Z" fill="#ead6c2"/>
-            <ellipse cx="0" cy="-46" rx="28" ry="5" fill="#e6cdb8"/>
-            <path d="M-35 -45 C-33 -82 33 -82 35 -45 C20 -40 -20 -40 -35 -45 Z" fill="var(--cap)"/>
-            <ellipse cx="-13" cy="-66" rx="11" ry="4.5" fill="#fff" opacity=".35" transform="rotate(-18 -13 -66)"/>
-            <circle cx="-17" cy="-56" r="5" fill="#fff" opacity=".85"/>
-            <circle cx="5" cy="-68" r="4" fill="#fff" opacity=".85"/>
-            <circle cx="20" cy="-54" r="4.5" fill="#fff" opacity=".85"/>
-            <circle cx="-3" cy="-52" r="2.6" fill="#fff" opacity=".8"/>
-            <circle cx="-3.5" cy="-24" r="1.9" fill="#4a3a52"/><circle cx="3.5" cy="-24" r="1.9" fill="#4a3a52"/>
-            <path d="M-2 -19.5 Q0 -17.5 2 -19.5" stroke="#4a3a52" stroke-width="1.2" fill="none" stroke-linecap="round"/>
-            <ellipse cx="-7" cy="-20" rx="2.4" ry="1.4" fill="#f2a7c0"/><ellipse cx="7" cy="-20" rx="2.4" ry="1.4" fill="#f2a7c0"/>
-          </symbol>
-          <symbol id="tuft" viewBox="-12 -24 24 24" overflow="visible">
-            <path d="M-8 0 C-9 -10 -12 -16 -11 -22 C-7 -14 -5 -8 -3 0 Z M-2 0 C-2 -10 0 -18 2 -24 C3 -16 3 -8 3 0 Z M3 0 C6 -8 9 -14 12 -18 C10 -10 8 -5 8 0 Z" fill="#6fb893"/>
-          </symbol>
-          <symbol id="daisy" viewBox="-6 -20 12 20" overflow="visible">
-            <path d="M0 0 L0 -12" stroke="#6fb893" stroke-width="1.6"/>
-            <g fill="#fff"><circle cx="0" cy="-17" r="2.6"/><circle cx="-3.5" cy="-14" r="2.6"/><circle cx="3.5" cy="-14" r="2.6"/><circle cx="-2.2" cy="-10.5" r="2.6"/><circle cx="2.2" cy="-10.5" r="2.6"/></g>
-            <circle cx="0" cy="-13.5" r="2.2" fill="#f5d06a"/>
-          </symbol>
-        </defs>
-
-        <path d="M0 236 C200 180 380 222 600 194 C820 166 1000 214 1200 184 L1200 360 L0 360 Z" fill="#b39ae6" opacity=".55"/>
-        <path d="M0 282 C180 246 420 276 620 252 C820 228 1000 266 1200 246 L1200 360 L0 360 Z" fill="#94d0b0"/>
-        <path d="M0 318 C250 298 500 324 760 304 C960 290 1100 314 1200 302 L1200 360 L0 360 Z" fill="#7cc19d"/>
-
-        <!-- mushrooms, each swaying at its own pace -->
-        <use href="#shroom" class="sway" style="--cap:#f08fb0;--t:4.2s" x="50" y="230" width="90" height="96"/>
-        <use href="#shroom" class="sway" style="--cap:#b59be9;--t:3.4s" x="130" y="268" width="52" height="56"/>
-        <use href="#shroom" class="sway" style="--cap:#f7ae86;--t:5s" x="20" y="282" width="38" height="40"/>
-        <use href="#shroom" class="sway" style="--cap:#f7ae86;--t:4.6s" x="980" y="200" width="110" height="118"/>
-        <use href="#shroom" class="sway" style="--cap:#f08fb0;--t:3.6s" x="1080" y="246" width="62" height="66"/>
-        <use href="#shroom" class="sway" style="--cap:#f5d06a;--t:4s" x="1140" y="268" width="40" height="42"/>
-        <use href="#shroom" class="sway" style="--cap:#b59be9;--t:4.4s" x="600" y="262" width="48" height="52"/>
-
-        <g class="grass">
-          <use href="#tuft" class="sway" style="--t:3s" x="190" y="296" width="28" height="28"/>
-          <use href="#tuft" class="sway" style="--t:3.8s" x="420" y="300" width="24" height="24"/>
-          <use href="#tuft" class="sway" style="--t:3.3s" x="700" y="288" width="30" height="30"/>
-          <use href="#tuft" class="sway" style="--t:4.1s" x="930" y="290" width="26" height="26"/>
-          <use href="#daisy" class="sway" style="--t:3.6s" x="300" y="290" width="14" height="22"/>
-          <use href="#daisy" class="sway" style="--t:4.3s" x="320" y="296" width="12" height="18"/>
-          <use href="#daisy" class="sway" style="--t:3.9s" x="820" y="280" width="14" height="22"/>
-          <use href="#daisy" class="sway" style="--t:3.2s" x="1180" y="290" width="12" height="18"/>
-        </g>
-
-        <!-- a weasel sitting by the mushrooms, blinking and swishing its tail -->
-        <g transform="translate(250 318) scale(-1.5 1.5)">
-          <g class="weasel sitting">
-            <path class="tail" d="M28 -14 C56 -12 72 -32 66 -52 C62 -66 46 -66 45 -54 C44 -46 56 -42 53 -32 C49 -22 38 -19 26 -21 Z" fill="#efc39c"/>
-            <path d="M66 -52 C62 -66 46 -66 45 -54 C50 -58 58 -58 66 -52 Z" fill="#e2a982"/>
-            <rect x="-22" y="-8" width="7" height="9" rx="3.5" fill="#e3b28c"/><rect x="-12" y="-8" width="7" height="9" rx="3.5" fill="#e3b28c"/>
-            <rect x="14" y="-8" width="7" height="9" rx="3.5" fill="#e3b28c"/><rect x="24" y="-8" width="7" height="9" rx="3.5" fill="#e3b28c"/>
-            <ellipse cx="2" cy="-16" rx="34" ry="13" fill="#f3d0ae"/>
-            <circle cx="16" cy="-27" r="5" fill="#f3d0ae"/><circle cx="26" cy="-25" r="4" fill="#f3d0ae"/>
-            <ellipse cx="-2" cy="-10" rx="24" ry="6" fill="#fbe8d6"/>
-            <g class="head">
-              <circle cx="-38" cy="-40" r="5.5" fill="#f3d0ae"/><circle cx="-38" cy="-40" r="2.8" fill="#f2a7c0"/>
-              <circle cx="-22" cy="-41" r="5.5" fill="#f3d0ae"/><circle cx="-22" cy="-41" r="2.8" fill="#f2a7c0"/>
-              <circle cx="-30" cy="-27" r="15.5" fill="#f3d0ae"/>
-              <ellipse cx="-38" cy="-21" rx="8.5" ry="6" fill="#fbe8d6"/>
-              <ellipse cx="-45.5" cy="-23" rx="2.7" ry="2" fill="#6a4a5a"/>
-              <g class="blink"><circle cx="-35.5" cy="-29.5" r="4.8" fill="#2e2638"/><circle cx="-34.2" cy="-31" r="1.7" fill="#fff"/>
-                <circle cx="-23.5" cy="-29.5" r="4.8" fill="#2e2638"/><circle cx="-22.2" cy="-31" r="1.7" fill="#fff"/></g>
-              <ellipse cx="-27" cy="-20.5" rx="3.6" ry="2" fill="#f2a7c0" opacity=".8"/>
-            </g>
-          </g>
-        </g>
-
-        <!-- a weasel that wanders across now and then -->
-        <g class="wander">
-          <g transform="translate(0 322) scale(1.35)">
-            <g class="weasel walking">
-              <path class="tail" d="M28 -14 C56 -12 72 -32 66 -52 C62 -66 46 -66 45 -54 C44 -46 56 -42 53 -32 C49 -22 38 -19 26 -21 Z" fill="#d9c2ee"/>
-              <path d="M66 -52 C62 -66 46 -66 45 -54 C50 -58 58 -58 66 -52 Z" fill="#c4a8e6"/>
-              <rect class="leg a" x="-22" y="-8" width="7" height="10" rx="3.5" fill="#c9b0e6"/><rect class="leg b" x="-12" y="-8" width="7" height="10" rx="3.5" fill="#c9b0e6"/>
-              <rect class="leg b" x="14" y="-8" width="7" height="10" rx="3.5" fill="#c9b0e6"/><rect class="leg a" x="24" y="-8" width="7" height="10" rx="3.5" fill="#c9b0e6"/>
-              <g class="bob">
-                <ellipse cx="2" cy="-16" rx="34" ry="13" fill="#e2cdf3"/>
-                <circle cx="16" cy="-27" r="5" fill="#e2cdf3"/><circle cx="26" cy="-25" r="4" fill="#e2cdf3"/>
-                <ellipse cx="-2" cy="-10" rx="24" ry="6" fill="#f6eefc"/>
-                <circle cx="-38" cy="-40" r="5.5" fill="#e2cdf3"/><circle cx="-38" cy="-40" r="2.8" fill="#f2a7c0"/>
-                <circle cx="-22" cy="-41" r="5.5" fill="#e2cdf3"/><circle cx="-22" cy="-41" r="2.8" fill="#f2a7c0"/>
-                <circle cx="-30" cy="-27" r="15.5" fill="#e2cdf3"/>
-                <ellipse cx="-38" cy="-21" rx="8.5" ry="6" fill="#f6eefc"/>
-                <ellipse cx="-45.5" cy="-23" rx="2.7" ry="2" fill="#6a4a5a"/>
-                <g class="blink"><circle cx="-35.5" cy="-29.5" r="4.8" fill="#2e2638"/><circle cx="-34.2" cy="-31" r="1.7" fill="#fff"/>
-                  <circle cx="-23.5" cy="-29.5" r="4.8" fill="#2e2638"/><circle cx="-22.2" cy="-31" r="1.7" fill="#fff"/></g>
-                <ellipse cx="-27" cy="-20.5" rx="3.6" ry="2" fill="#f2a7c0" opacity=".8"/>
-              </g>
-            </g>
-          </g>
-        </g>
-
-        <!-- sparkles drifting up -->
-        <g class="sparks" fill="#fff7cf">
-          <circle class="spark" cx="120" cy="250" r="3" style="--t:7s;--d:0s"/>
-          <circle class="spark" cx="330" cy="270" r="2.4" style="--t:8s;--d:-2s"/>
-          <circle class="spark" cx="520" cy="250" r="2.8" style="--t:6.5s;--d:-4s"/>
-          <circle class="spark" cx="760" cy="260" r="2.2" style="--t:9s;--d:-1s"/>
-          <circle class="spark" cx="1010" cy="220" r="3" style="--t:7.5s;--d:-5s"/>
-          <circle class="spark" cx="1150" cy="250" r="2.4" style="--t:8.5s;--d:-3s"/>
-          <circle class="spark" cx="60" cy="230" r="2" style="--t:6s;--d:-3.5s"/>
-          <circle class="spark" cx="900" cy="270" r="2.6" style="--t:7s;--d:-6s"/>
-        </g>
-      </svg>
-    </div>
+    <!-- Jungle behind everything (her ask, 2026-11-10); drawn by scene.js. Nothing here can be clicked. -->
+    <div class="jungle-sky" aria-hidden="true"><i></i><i></i><i></i></div>
+    <div class="scene scene-top" id="scene-top" aria-hidden="true"></div>
+    <div class="scene scene-floor" id="scene-floor" aria-hidden="true"></div>
     <nav id="sidebar">
       <div class="brand">
         <img src="icons/icon.svg" alt="" width="40" height="40">
@@ -145,6 +35,7 @@
     </main>
   </div>
   <script src="config.js"></script>
+  <script src="scene.js"></script>
   <script src="app.js"></script>
 </body>
 </html>

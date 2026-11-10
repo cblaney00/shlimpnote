@@ -107,6 +107,26 @@ VibeNote (`../vibenote/CLAUDE.md`):
   sparkles drifting up, a peach weasel sitting by the mushrooms (blinks, tilts its head,
   swishes its tail) and a lavender weasel that trots across on tiny legs every ~46 s. All
   CSS animation. On phones the meadow holds still and the walker is hidden.
+- 2026-11-10, her/his words: "she doesnt like the dots in the background and she wants more
+  creatures ... make it like a jungle canopy (jungle mushrooms instead) and make more types
+  of creatures but make them a lot more fluffy and not smooth like paper cutouts ...
+  everything in this app should be very 3D". **No dots anywhere** (`--dots` is empty). The
+  meadow became a **jungle** drawn by `scene.js` into `#scene-top` (canopy: glossy leaves,
+  vines, a branch) and `#scene-floor` (misty layers, glowing jungle mushrooms with faces,
+  ferns, a mossy log with shelf fungi), plus slanting sun rays (`.jungle-sky`). Creatures:
+  sloth swinging on a vine, ring-tailed lemur on the branch (stripy tail sways), round bird
+  (×2), fuzzy caterpillar on a leaf, bunny (hops, ear twitches), red panda, peach weasel
+  sitting, lavender weasel wandering across. **Fur = the `#fur` SVG filter** (roughened
+  outline + light/dark strands) over radial-gradient bodies; eyes glossy; soft shadows.
+  3D: cards and buttons have bevels, a coloured ledge underneath and deep shadows; titles
+  are white bubble letters with a stacked 3D edge; dots in the sidebar are shiny spheres.
+- 2026-11-10, his words: "the buttons are too organized and almost in a grid, they should
+  maintain postion but their shapes should be moving and bending like they are globs of
+  colored jelly in an invisible highly viscous liquid". **Goo**: cards, buttons, chips,
+  doses, days, ticks, emoji buttons slowly morph their outline (`goo`, `goo-card`,
+  `goo-day` border-radius keyframes) and tilt a degree or so, each with its own random
+  pace (`--md`) and start (set once per element in `Squish.breathe`). Positions never move.
+  On phones the shapes are blobby but still.
 Ask him before changing the look.
 
 ## How it is built
@@ -120,7 +140,7 @@ Ask him before changing the look.
 - Her data: browser `localStorage` key `shlimpnote.v1` on her computer only
   (`navigator.storage.persist()` asks the browser not to clear it). Nothing of hers is
   ever sent anywhere except the change requests.
-- Files: `index.html` (shell), `style.css` (all looks), `app.js` (everything: store,
+- Files: `index.html` (shell), `style.css` (all looks), `scene.js` (the jungle and creatures, SVG), `app.js` (everything else: store,
   pages as `VIEWS.<page>`, checklist/edit/undo helpers, change requests),
   `config.js` (`repo` + `key` for change requests: a fine-grained GitHub token that can
   only write issues in that one private repo, stored base64 of the reversed string so
