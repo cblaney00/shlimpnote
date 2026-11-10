@@ -136,7 +136,8 @@ Ask him before changing the look.
   normal app (Start menu, taskbar, own window). Dev shell: `vibe-web`.
 - **Live at https://cblaney00.github.io/shlimpnote/** — GitHub Pages from `main` of the
   **public** repo **github.com/cblaney00/shlimpnote** (his OK, 2026-11-10). **Push `main` after
-  every commit** (`sudo -u insideabush -H git push`, after the chown): that push is both the
+  every commit** (after the chown: `sudo -u insideabush -H git -c credential.helper= -c "credential.helper=!$(sudo -u insideabush -H which gh) auth git-credential" push`
+  — plain `git push` has no login here): that push is both the
   backup and the release — her installed app picks it up the next time she opens it.
   `sw.js` (service worker) fetches every file fresh each time the app opens online and
   falls back to the saved copy offline.
