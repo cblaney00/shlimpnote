@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" class="locked">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -34,6 +34,24 @@
       </header>
       <section id="page"></section>
     </main>
+  </div>
+  <!-- PIN lock (his ask, 2026-11-11): a screen in the page, not a pop-up. Driven by Lock in app.js. -->
+  <div id="lock">
+    <div class="card lock-card">
+      <img src="icons/icon.svg" alt="" width="64" height="64">
+      <h2 data-title>Getting ready…</h2>
+      <div class="lock-sub" data-sub></div>
+      <div class="pin-dots"><i class="pin-dot"></i><i class="pin-dot"></i><i class="pin-dot"></i><i class="pin-dot"></i></div>
+      <div class="pin-pad" data-pad hidden>
+        <button class="btn" data-k="1">1</button><button class="btn" data-k="2">2</button><button class="btn" data-k="3">3</button>
+        <button class="btn" data-k="4">4</button><button class="btn" data-k="5">5</button><button class="btn" data-k="6">6</button>
+        <button class="btn" data-k="7">7</button><button class="btn" data-k="8">8</button><button class="btn" data-k="9">9</button>
+        <span></span><button class="btn" data-k="0">0</button><button class="btn" data-k="back" aria-label="Delete">⌫</button>
+      </div>
+      <button class="link" data-forgot hidden>Forgot it?</button>
+      <div class="row lock-reset" data-reset hidden><input class="field" placeholder="Paste your connect code" autocomplete="off"><button class="btn">Make a new PIN</button></div>
+      <button class="link" data-cancel hidden>Cancel</button>
+    </div>
   </div>
   <script src="config.js"></script>
   <script src="scene.js"></script>

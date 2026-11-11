@@ -848,3 +848,46 @@ body {
 .sync-line { border: 0; background: transparent; color: #fff; font-weight: 700; font-size: .85rem; padding: 6px; text-shadow: 0 1px 2px rgba(40, 20, 70, .4); }
 .sync-line.warn { color: #fff6c9; text-decoration: underline; }
 @media (max-width: 760px) { .sync-line { white-space: nowrap; } }
+
+/* ---------- Her phone: same look, much less work (her ask, 2026-11-11: "laggy on my
+   phone and makes it hot"). The jungle is drawn without fur/glow filters (scene.js),
+   the sugar-grain noise and blurred sun rays are dropped, and the big soft blurred
+   shadows under cards and buttons are swapped for their solid coloured ledge only.
+   The computer is unchanged. ---------- */
+@media (max-width: 760px), (hover: none) {
+  :root { --grain: linear-gradient(transparent, transparent); }
+  .jungle-sky { display: none; }
+  .brand img, .nav-dot, .spark { filter: none; }
+  .scene { contain: strict; }
+  .card {
+    box-shadow: inset 3px 4px 0 rgba(255, 255, 255, .35),
+      inset -4px -6px 0 color-mix(in srgb, var(--tone) 70%, #4f3480 30%),
+      0 7px 0 color-mix(in srgb, var(--tone) 55%, #5b3f8c);
+  }
+  .btn, .link, .chip, .dose, .feel, .j-emoji, .nav-item.on, .check, .day, .side-row.on {
+    box-shadow: inset 2px 2px 0 rgba(255, 255, 255, .4), 0 4px 0 color-mix(in srgb, var(--tone) 50%, #5b3f8c);
+  }
+  #page-title { text-shadow: 0 2px 0 color-mix(in srgb, var(--tone) 55%, #6b4a98), 0 4px 0 color-mix(in srgb, var(--tone) 45%, #6b4a98); }
+}
+
+/* ---------- PIN lock (his ask, 2026-11-11) ----------
+   A full screen in the page over the jungle; the sidebar and page hide behind it. */
+#lock { position: fixed; inset: 0; z-index: 40; display: flex; align-items: center; justify-content: center; padding: 16px; overflow: auto; }
+#lock[hidden] { display: none; }
+html.locked #sidebar, html.locked #main { visibility: hidden; }
+html:not(.locked) #lock { display: none; }
+.lock-card { --tone: var(--lavender); width: min(340px, 100%); display: flex; flex-direction: column; align-items: center; gap: 12px; text-align: center; padding: 26px 22px; }
+.lock-card img { animation: bob 3.2s ease-in-out infinite; }
+.lock-card h2 { margin: 0; font-size: 1.4rem; justify-content: center; }
+.lock-sub { min-height: 1.3em; font-size: .95rem; }
+.lock-sub.warn { font-weight: 800; color: #5b3f8c; }
+.pin-dots { display: flex; gap: 14px; margin: 4px 0 6px; }
+.pin-dot { width: 18px; height: 18px; border-radius: 50%; background: color-mix(in srgb, var(--tone) 45%, #6b4a98); opacity: .35;
+  box-shadow: inset -2px -3px 3px rgba(50, 20, 80, .3); transition: opacity .15s, background .15s; }
+.pin-dot.on { opacity: 1; background: radial-gradient(circle at 34% 28%, rgba(255, 255, 255, .9) 0 16%, rgba(255, 255, 255, 0) 42%), #8f6fc4; }
+.pin-pad { display: grid; grid-template-columns: repeat(3, 64px); gap: 12px; }
+.pin-pad[hidden] { display: none; }
+.pin-pad .btn { width: 64px; height: 64px; padding: 0; font-size: 1.5rem; font-weight: 800; }
+.lock-reset { width: 100%; flex-wrap: wrap; justify-content: center; }
+.lock-reset .field { flex: 1 1 100%; }
+#lock [hidden] { display: none !important; }

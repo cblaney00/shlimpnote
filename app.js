@@ -798,6 +798,16 @@ VIEWS.sync = (el) => {
   $("[data-code]", card).addEventListener("keydown", (e) => { if (e.key === "Enter") go(); });
   const now = $("[data-now]", card); if (now) now.addEventListener("click", () => { syncNow(); $("[data-msg]", card).textContent = "Syncing…"; setTimeout(refresh, 2500); });
   el.appendChild(card);
+  // His ask (2026-11-11): she can change her PIN whenever she wants.
+  if (!DEMO) {
+    const pin = h(`<div class="card stack" style="--tone:var(--lilac)">
+        <h2>Your PIN</h2>
+        <div>${S.lock ? "ShlimpNote asks for your 4-number PIN each time it opens, on all your devices." : "No PIN yet."}</div>
+        <div class="row"><button class="btn" data-pin>Change PIN</button></div>
+      </div>`);
+    $("[data-pin]", pin).addEventListener("click", () => Lock.change());
+    el.appendChild(pin);
+  }
 };
 
 
@@ -867,6 +877,119 @@ function demoData() {
   return d;
 }
 
+/* ---------------- PIN lock ----------------
+   His ask (2026-11-11): a 4-digit PIN, asked every time ShlimpNote opens and again after
+   5 minutes away. She must make one the first time (no skipping); one PIN for her phone
+   and computer — it travels with her synced data as S.lock = "salt:hash" (one string, so
+   the merge can never mix two PINs). Only a salted PBKDF2 hash is kept, never the PIN.
+   The lock is a full screen in the page itself (no pop-up). Change it on "Your devices";
+   "Forgot it?" lets her make a new one with this device's connect code. ?demo skips it. */
+const Lock = (() => {
+  const AWAY = 5 * 60 * 1000;
+  const el = $("#lock");
+  let mode = "enter", typed = "", first = "", from = null, hiddenAt = 0;
+  const hex = (b) => [...new Uint8Array(b)].map((x) => x.toString(16).padStart(2, "0")).join("");
+  async function hash(pin, salt) {
+    const k = await crypto.subtle.importKey("raw", new TextEncoder().encode(pin), "PBKDF2", false, ["deriveBits"]);
+    return hex(await crypto.subtle.deriveBits({ name: "PBKDF2", hash: "SHA-256", salt: new TextEncoder().encode(salt), iterations: 150000 }, k, 256));
+  }
+  async function matches(pin) {
+    const [salt, h] = String(S.lock || "").split(":");
+    return !!salt && (await hash(pin, salt)) === h;
+  }
+  async function setPin(pin) {
+    const salt = hex(crypto.getRandomValues(new Uint8Array(16)));
+    S.lock = salt + ":" + (await hash(pin, salt));
+    save(true);
+  }
+  const TEXT = {
+    wait: ["Getting ready…", ""],
+    enter: ["Enter your PIN", ""],
+    make: ["Make a PIN", "Pick 4 numbers. You'll type them each time you open ShlimpNote, on your phone and computer."],
+    again: ["Type it again", "Just to be sure."],
+    old: ["Your PIN now", "Type the PIN you use now, then pick a new one."],
+  };
+  function draw(msg = "") {
+    const [title, sub] = TEXT[mode];
+    $("[data-title]", el).textContent = title;
+    $("[data-sub]", el).textContent = msg || sub;
+    $("[data-sub]", el).classList.toggle("warn", !!msg);
+    el.querySelectorAll(".pin-dot").forEach((d, i) => d.classList.toggle("on", i < typed.length));
+    $("[data-pad]", el).hidden = mode === "wait";
+    $("[data-forgot]", el).hidden = mode !== "enter";
+    $("[data-reset]", el).hidden = true;
+    $("[data-cancel]", el).hidden = !from;
+  }
+  function show(m, back = null) {
+    mode = m; typed = ""; first = ""; from = back;
+    document.documentElement.classList.add("locked");
+    if (document.activeElement && document.activeElement.blur) document.activeElement.blur();
+    el.hidden = false;
+    draw();
+    if (window.Squish) Squish.breathe(el);
+  }
+  function open() {
+    document.documentElement.classList.remove("locked");
+    el.hidden = true;
+    if (from) { const back = from; from = null; go(back); }
+  }
+  function wobble() {
+    if (window.Squish) el.querySelectorAll(".pin-dot").forEach((d) => Squish.push(d, 1.4, false));
+  }
+  async function done() {
+    const pin = typed; typed = "";
+    if (mode === "enter") {
+      if (await matches(pin)) open(); else { wobble(); draw("That's not it — try again"); }
+    } else if (mode === "old") {
+      if (await matches(pin)) { mode = "make"; draw(); } else { wobble(); draw("That's not it — try again"); }
+    } else if (mode === "make") {
+      first = pin; mode = "again"; draw();
+    } else if (mode === "again") {
+      if (pin === first) { await setPin(pin); open(); }
+      else { mode = "make"; first = ""; wobble(); draw("Those didn't match — pick 4 numbers again"); }
+    }
+  }
+  function key(k) {
+    if (mode === "wait") return;
+    if (k === "back") typed = typed.slice(0, -1);
+    else if (typed.length < 4) typed += k;
+    draw();
+    if (typed.length === 4) setTimeout(done, 160);   // let the 4th dot fill in first
+  }
+  el.addEventListener("click", (e) => {
+    const b = e.target.closest("[data-k]"); if (b) return key(b.dataset.k);
+    if (e.target.closest("[data-cancel]")) { const back = from; from = null; document.documentElement.classList.remove("locked"); el.hidden = true; go(back); return; }
+    if (e.target.closest("[data-forgot]")) { $("[data-reset]", el).hidden = false; $("[data-forgot]", el).hidden = true; $("[data-reset] input", el).focus(); }
+  });
+  const reset = () => {
+    const f = $("[data-reset] input", el), code = f.value.trim();
+    if (code && code === deviceKey()) { f.value = ""; show("make"); }
+    else draw(deviceKey() ? "That's not this device's connect code" : "This device isn't connected — ask for a new connect code to make a new PIN");
+  };
+  $("[data-reset] button", el).addEventListener("click", reset);
+  $("[data-reset] input", el).addEventListener("keydown", (e) => { if (e.key === "Enter") reset(); });
+  document.addEventListener("keydown", (e) => {
+    if (el.hidden || e.target.matches("input")) return;
+    if (/^[0-9]$/.test(e.key)) key(e.key);
+    else if (e.key === "Backspace") key("back");
+    else if (e.key === "Escape" && from) $("[data-cancel]", el).click();
+  });
+  document.addEventListener("visibilitychange", () => {
+    if (DEMO || !S.lock) return;
+    if (document.visibilityState === "hidden") { hiddenAt = Date.now(); save(true); }
+    else if (hiddenAt && Date.now() - hiddenAt >= AWAY && el.hidden) show("enter");
+  });
+  async function start() {
+    if (DEMO) { document.documentElement.classList.remove("locked"); return; }
+    if (S.lock) return show("enter");
+    // No PIN here yet: if this device is connected, her other device may already have one.
+    show("wait");
+    if (deviceKey() && navigator.onLine) await Promise.race([syncNow(), new Promise((r) => setTimeout(r, 8000))]);
+    show(S.lock ? "enter" : "make");
+  }
+  return { start, change: () => show("old", current) };
+})();
+
 /* ---------------- Start ---------------- */
 document.addEventListener("click", (e) => { const b = e.target.closest("[data-go]"); if (b) go(b.dataset.go); });
 resetRepeats();
@@ -874,7 +997,7 @@ drawNav();
 render();
 drawSync();
 sendRequests();
-syncNow();
+Lock.start().then(() => syncNow());
 window.addEventListener("online", () => { sendRequests(); syncNow(); });
 // Coming back to the app on a new day: refresh Today so ticks and chores are for the right day.
 let lastDay = dayKey();
@@ -899,6 +1022,9 @@ window.Squish = (() => {
   const springs = new Map(); // element -> its spring
   let raf = 0, last = 0;
   const calm = () => matchMedia("(prefers-reduced-motion: reduce)").matches;
+  // On her phone ("laggy ... makes it hot", 2026-11-11) a tap still squishes and sends
+  // out one soft ring, but skips the extra rings and the nudge of everything nearby.
+  const PHONE = matchMedia("(max-width: 760px), (hover: none)").matches;
 
   // A way to find "the same" element again after a page redraw replaces it.
   function keyOf(el) {
@@ -952,7 +1078,7 @@ window.Squish = (() => {
     return "rgba(184, 156, 224, .55)";
   }
   function ripple(x, y, size, colour) {
-    [[0, ""], [120, ""], [240, ""], [0, "fill"]].forEach(([delay, kind], i) => {
+    (PHONE ? [[0, ""]] : [[0, ""], [120, ""], [240, ""], [0, "fill"]]).forEach(([delay, kind], i) => {
       const r = document.createElement("div");
       r.className = "ripple " + kind;
       const d = size + i * 70;
@@ -975,6 +1101,7 @@ window.Squish = (() => {
     const size = Math.min(420, Math.max(r.width, r.height) + 110);
     ripple(e.clientX, e.clientY, size, ringColour(hit));
     // The ripple nudges what's around it as it passes.
+    if (PHONE) return;
     const R = size * 0.9 + 120;
     for (const n of document.querySelectorAll(NEAR)) {
       if (chain.includes(n) || n.contains(hit)) continue;
@@ -1013,7 +1140,7 @@ window.Squish = (() => {
   // A freshly opened page pops in with a boing, one card after another.
   function pop(root) {
     if (calm()) return;
-    [...root.querySelectorAll(".card, .item, .day, .side-row")].slice(0, 60).forEach((n, i) => {
+    [...root.querySelectorAll(".card, .item, .day, .side-row")].slice(0, PHONE ? 8 : 60).forEach((n, i) => {
       const s = spring(n);
       s.u = 0.82; s.uv = 0; s.j = -0.6; s.jv = 4;
       n.style.transform = "scale(.82)";

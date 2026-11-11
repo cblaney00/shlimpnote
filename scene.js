@@ -283,7 +283,12 @@
       </g>
     </svg>`;
 
-  const put = (id, svg) => { const el = document.getElementById(id); if (el) el.innerHTML = svg; };
+  // Her phone ("laggy on my phone and makes it hot", 2026-11-11): the fur, glow, blur and
+  // shadow filters are what make a phone work hard, so on phones the same scene is drawn
+  // without them (smooth animals) and without the drifting sparkles. Computer unchanged.
+  const PHONE = matchMedia("(max-width: 760px), (hover: none)").matches;
+  const lite = (svg) => svg.replace(/ filter="url\(#\w+\)"/g, "").replace(/<circle class="spark"[^>]*\/>/g, "");
+  const put = (id, svg) => { const el = document.getElementById(id); if (el) el.innerHTML = PHONE ? lite(svg) : svg; };
   put("scene-top", top);
   put("scene-floor", floor);
 })();

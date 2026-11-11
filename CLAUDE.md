@@ -127,6 +127,18 @@ VibeNote (`../vibenote/CLAUDE.md`):
   `goo-day` border-radius keyframes) and tilt a degree or so, each with its own random
   pace (`--md`) and start (set once per element in `Squish.breathe`). Positions never move.
   On phones the shapes are blobby but still.
+- 2026-11-11, his ask: "add a password ... set up the next time she logs in / she can also
+  set it up whenever she wants". His choices: **4-digit PIN**, asked **every time it opens and
+  after 5 min away**, **required** (no skipping), **one PIN for phone and computer**. The lock
+  is a full screen in the page (`#lock` in `index.html`, `Lock` in `app.js`): shrimp, 4 dots,
+  squishy keypad (keyboard digits work too). Change it on "Your devices" (Change PIN card);
+  "Forgot it?" makes a new one with this device's connect code.
+- 2026-11-11, her request (issue #1): "laggy on my phone and makes it hot". His choice: lighter
+  **on phones only**, computer unchanged. On phones (`max-width: 760px` or no hover): the jungle
+  is drawn without its SVG filters (no fur/glow/blur, animals smooth) and without sparkles
+  (`lite()` in `scene.js`), no sugar-grain noise, no sun rays, solid ledges instead of big
+  blurred shadows (last phone block of `style.css`), one ripple ring per tap with no nudging of
+  nearby things, and only the first 8 cards pop in (`PHONE` in `Squish`).
 Ask him before changing the look.
 
 ## How it is built
@@ -147,7 +159,9 @@ Ask him before changing the look.
   online, and 2.5 s after any change. Three-way merge against the last synced copy
   (`shlimpnote.base`): changes on both devices survive; same field changed on both → this
   device wins; an edit beats a delete. Never swaps data while a text box is focused (retries).
-  `ui` is never synced. Tested against the real repo 2026-11-10 (node harness, test file
+  `ui` is never synced. The PIN travels with it as `S.lock` = "salt:hash" (PBKDF2-SHA256, one
+  string so the merge can't mix two PINs); the PIN itself is never stored. A device with no
+  PIN waits for its first sync (up to 8 s) before asking her to make one. Tested against the real repo 2026-11-10 (node harness, test file
   removed afterwards).
 - **Connect code** = a fine-grained GitHub token (Contents + Issues read/write on
   shlimpnote-data only) that **he** makes on github.com; it is stored only on her devices
@@ -167,7 +181,7 @@ Ask him before changing the look.
   (shrimp icon; PNGs made from the SVG with `magick`).
 - If a new file is added, add it to `FILES` in `sw.js` so it works offline.
 - `?demo` uses made-up data in a separate storage key (`shlimpnote.demo`); `?page=meds`
-  opens a page. Both are for checking/screenshots and never touch her data.
+  opens a page. Both are for checking/screenshots and never touch her data. `?demo` also skips the PIN lock.
 - Run locally: `./run.sh` (tiny `serve.js` server on port 8642 + Firefox).
 - Screenshots: start `node serve.js 8642`, then
   `firefox --headless --no-remote -profile <scratch dir> --window-size=1280,860 --screenshot <png> "http://localhost:8642/?demo&page=<page>"`.
