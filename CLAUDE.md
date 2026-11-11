@@ -139,6 +139,12 @@ VibeNote (`../vibenote/CLAUDE.md`):
   (`lite()` in `scene.js`), no sugar-grain noise, no sun rays, solid ledges instead of big
   blurred shadows (last phone block of `style.css`), one ripple ring per tap with no nudging of
   nearby things, and only the first 8 cards pop in (`PHONE` in `Squish`).
+- 2026-11-11, his words: "she can check it off in her app if its done". Each of her requests
+  has a jelly tick; ticking marks it Done and closes the issue with her token (untick reopens;
+  pending change kept in `r.push` until GitHub takes it).
+- 2026-11-11, "make sure she can use the new version": besides the service worker, `Updates`
+  in `app.js` compares the app's files when she comes back after ≥5 min (lock is up then
+  anyway) and reloads into a newer version, so an app left open on her phone updates too.
 Ask him before changing the look.
 
 ## How it is built

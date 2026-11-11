@@ -827,8 +827,15 @@ async function sendRequests() {
       if (res.ok) { const j = await res.json(); r.status = "sent"; r.issue = j.number; changed = true; }
     } catch (e) { break; }
   }
+  // Her own ticks: close (or reopen) the issue on GitHub.
+  for (const r of S.requests.filter((r) => r.push && r.issue)) {
+    try {
+      const res = await gh(`/issues/${r.issue}`, { method: "PATCH", body: JSON.stringify({ state: r.push }) });
+      if (res.ok) { delete r.push; changed = true; }
+    } catch (e) { break; }
+  }
   // Has he finished any? A closed issue means done.
-  for (const r of S.requests.filter((r) => r.status === "sent" && r.issue)) {
+  for (const r of S.requests.filter((r) => r.status === "sent" && r.issue && !r.push)) {
     try {
       const res = await gh(`/issues/${r.issue}`);
       if (res.ok) { const j = await res.json(); if (j.state === "closed") { r.status = "done"; changed = true; } }
@@ -857,7 +864,17 @@ VIEWS.ask = (el) => {
   if (S.requests.length) {
     const words = { waiting: "Waiting to send", sent: "Sent", done: "Done" };
     const past = h(`<div class="card" style="margin-top:18px"><h2>Your requests</h2><div></div></div>`);
-    S.requests.forEach((r) => past.lastElementChild.appendChild(h(`<div class="req"><div><span class="tag ${r.status}">${words[r.status]}</span> <span class="muted small">${fmtTime(r.at)}</span></div><div style="white-space:pre-wrap">${esc(r.text)}</div></div>`)));
+    // His ask (2026-11-11): she ticks a request off herself once it's done; that also
+    // closes it on GitHub (untick opens it again).
+    S.requests.forEach((r) => {
+      const row = h(`<div class="req" data-id="req-${r.id}"><button class="check ${r.status === "done" ? "on" : ""}" aria-label="Done"></button><div class="req-body"><div><span class="tag ${r.status}">${words[r.status]}</span> <span class="muted small">${fmtTime(r.at)}</span></div><div style="white-space:pre-wrap">${esc(r.text)}</div></div></div>`);
+      $(".check", row).addEventListener("click", () => {
+        if (r.status === "done") { r.status = r.issue ? "sent" : "waiting"; if (r.issue) r.push = "open"; }
+        else { r.status = "done"; if (r.issue) r.push = "closed"; }
+        refresh(); sendRequests();
+      });
+      past.lastElementChild.appendChild(row);
+    });
     el.appendChild(past);
   }
 };
@@ -876,6 +893,22 @@ function demoData() {
   d.journal[k(-1)] = { text: "Quiet day. Went for a long walk.", mood: "Good" };
   return d;
 }
+
+/* ---------------- Staying up to date ----------------
+   The service worker already gives her the newest files whenever ShlimpNote is opened.
+   This notices a newer version while the app stays open in the background. */
+const Updates = (() => {
+  const FILES = ["index.html", "app.js", "style.css", "scene.js"];
+  const sig = async () => (await Promise.all(FILES.map((f) => fetch(f, { cache: "no-cache" }).then((r) => (r.ok ? r.text() : ""))))).join("\u0000");
+  let first = null;
+  const ready = () => { if (!first && navigator.onLine && location.protocol !== "file:") first = sig().catch(() => null); };
+  ready();
+  async function newer() {
+    if (!navigator.onLine || !first) { ready(); return false; }
+    try { const [a, b] = await Promise.all([first, sig()]); return !!a && !!b && a !== b; } catch (e) { return false; }
+  }
+  return { newer };
+})();
 
 /* ---------------- PIN lock ----------------
    His ask (2026-11-11): a 4-digit PIN, asked every time ShlimpNote opens and again after
@@ -974,10 +1007,15 @@ const Lock = (() => {
     else if (e.key === "Backspace") key("back");
     else if (e.key === "Escape" && from) $("[data-cancel]", el).click();
   });
-  document.addEventListener("visibilitychange", () => {
+  document.addEventListener("visibilitychange", async () => {
     if (DEMO || !S.lock) return;
     if (document.visibilityState === "hidden") { hiddenAt = Date.now(); save(true); }
-    else if (hiddenAt && Date.now() - hiddenAt >= AWAY && el.hidden) show("enter");
+    else if (hiddenAt && Date.now() - hiddenAt >= AWAY && el.hidden) {
+      show("enter");
+      // An app left open on her phone never reloads by itself, so check for a new version
+      // while the lock is up anyway, and reload into it (his ask: she always gets the newest).
+      if (await Updates.newer()) { save(true); location.reload(); }
+    }
   });
   async function start() {
     if (DEMO) { document.documentElement.classList.remove("locked"); return; }

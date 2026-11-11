@@ -891,3 +891,8 @@ html:not(.locked) #lock { display: none; }
 .lock-reset { width: 100%; flex-wrap: wrap; justify-content: center; }
 .lock-reset .field { flex: 1 1 100%; }
 #lock [hidden] { display: none !important; }
+
+/* Her requests: a tick to mark one done herself (his ask, 2026-11-11). */
+.req { flex-direction: row; align-items: flex-start; gap: 12px; }
+.req .check { flex: none; margin-top: 2px; }
+.req-body { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
