@@ -145,6 +145,10 @@ VibeNote (`../vibenote/CLAUDE.md`):
 - 2026-11-11, "make sure she can use the new version": besides the service worker, `Updates`
   in `app.js` compares the app's files when she comes back after ≥5 min (lock is up then
   anyway) and reloads into a newer version, so an app left open on her phone updates too.
+- 2026-11-12, her ask: the taken "midday" button should "change a totally different color ...
+  really obvious that she did or didnt take it" (it turned a similar green). His pick: **taken
+  doses are deep purple** (`#7a4fc4`, white text/tick; last `.dose.on` block of `style.css`),
+  untaken stay mint; the tap ripple on a dose is purple too.
 Ask him before changing the look.
 
 ## How it is built

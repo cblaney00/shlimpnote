@@ -1111,7 +1111,7 @@ window.Squish = (() => {
   }
   function ringColour(el) {
     if (el.closest(".day")) return "rgba(156, 163, 234, .55)";
-    if (el.closest(".dose")) return "rgba(124, 197, 162, .55)";
+    if (el.closest(".dose")) return "rgba(122, 79, 196, .55)";
     const nav = el.closest(".nav-item"); if (nav) return getComputedStyle($(".nav-dot", nav)).backgroundColor;
     return "rgba(184, 156, 224, .55)";
   }
