@@ -1015,10 +1015,28 @@ const Lock = (() => {
       // An app left open on her phone never reloads by itself, so check for a new version
       // while the lock is up anyway, and reload into it (his ask: she always gets the newest).
       if (await Updates.newer()) { save(true); location.reload(); }
-    }
+    } else if (document.visibilityState === "visible") quietUpdate();
   });
+  // His ask (2026-11-12): "make sure that [she] has this version when she opens her phone".
+  // Coming back after a short break, or every 10 minutes while it's open, a newer version
+  // is loaded straight away — without asking for the PIN again (she was already in), and
+  // never while she's typing.
+  const RESUME = "shlimpnote.resume";
+  async function quietUpdate() {
+    if (DEMO || !el.hidden || document.visibilityState !== "visible") return;
+    const a = document.activeElement;
+    if (a && a.matches("textarea, input")) return;
+    if (!(await Updates.newer())) return;
+    save(true);
+    try { sessionStorage.setItem(RESUME, String(Date.now())); } catch (e) { /* then she types her PIN once */ }
+    location.reload();
+  }
+  setInterval(quietUpdate, 10 * 60 * 1000);
   async function start() {
     if (DEMO) { document.documentElement.classList.remove("locked"); return; }
+    let resumed = 0;
+    try { resumed = +sessionStorage.getItem(RESUME) || 0; sessionStorage.removeItem(RESUME); } catch (e) { /* none */ }
+    if (S.lock && Date.now() - resumed < 15000) { document.documentElement.classList.remove("locked"); el.hidden = true; return; }
     if (S.lock) return show("enter");
     // No PIN here yet: if this device is connected, her other device may already have one.
     show("wait");
