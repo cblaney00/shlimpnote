@@ -9,3 +9,4 @@ when one is finished, tick it and move it to **Done**.
 
 - [x] add a password to schlimpnote to be set up the next time she logs in/ she can also set it up whenever she wants
 - [x] justus also sent a request to shlimpnote about making her phone less laggy and hot
+- [x] the goals tab wont let her mark a goal as complete

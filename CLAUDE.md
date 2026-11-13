@@ -19,7 +19,7 @@ times of day; a tick per dose per day; last-7-days strip), **Cycle** (month cale
 click a day for light → medium → heavy → clear; predicts the next period from her
 average cycle, dashed days = expected), **Notes** (list + search + pin, autosaves),
 **Chores** (checklist; a chore can repeat every day / every week and comes back by
-itself), **Work** (checklist), **Goals** (goal with steps and a progress bar),
+itself), **Work** (checklist), **Goals** (goal with steps and a progress bar; a jelly tick by the title marks the whole goal done — struck through, bar full, "Done 🎉", sinks to the bottom; `g.done`),
 **Journal** (one entry per day with a mood).
 
 **Ask for a change** (sidebar bottom, his ask): she types a request; it is sent to him

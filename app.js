@@ -382,7 +382,7 @@ VIEWS.today = (el) => {
     const st = h(`<div class="stack"></div>`);
     S.goals.slice(0, 4).forEach((g) => {
       const p = goalPct(g);
-      st.appendChild(h(`<div><div class="row" style="justify-content:space-between"><span>${esc(g.title)}</span><span class="muted small">${p}%</span></div><div class="bar"><div style="width:${p}%"></div></div></div>`));
+      st.appendChild(h(`<div><div class="row" style="justify-content:space-between"><span>${esc(g.title)}</span><span class="muted small">${g.done ? "Done 🎉" : p + "%"}</span></div><div class="bar"><div style="width:${p}%"></div></div></div>`));
     });
     gc.appendChild(st);
   }
@@ -570,19 +570,26 @@ VIEWS.work = (el) => {
   el.appendChild(c);
 };
 
-function goalPct(g) { return g.steps.length ? Math.round((100 * g.steps.filter((s) => s.done).length) / g.steps.length) : 0; }
+function goalPct(g) { return g.done ? 100 : g.steps.length ? Math.round((100 * g.steps.filter((s) => s.done).length) / g.steps.length) : 0; }
 
 VIEWS.goals = (el) => {
   el.appendChild(addBox("A new goal…", (v) => { S.goals.unshift({ id: uid(), title: v, steps: [] }); refresh(); }, "Add goal"));
   const st = h(`<div class="stack" style="margin-top:18px"></div>`);
   if (!S.goals.length) st.appendChild(h(`<div class="empty">Add a goal, then break it into small steps. The bar fills as you tick them off.</div>`));
-  for (const g of S.goals) {
+  // Finished goals sink to the bottom (her own order is kept otherwise).
+  for (const g of [...S.goals.filter((x) => !x.done), ...S.goals.filter((x) => x.done)]) {
     const p = goalPct(g);
-    const card = h(`<div class="card stack">
-        <div class="row"><span class="goal-title">${esc(g.title)}</span><span class="muted">${p}%</span><button class="x" title="Remove">×</button></div>
+    const card = h(`<div class="card stack goal ${g.done ? "goal-done" : ""}" data-id="${g.id}">
+        <div class="row"><button class="check ${g.done ? "on" : ""}" aria-label="Goal done" title="${g.done ? "Not done yet" : "Mark this goal done"}"></button><span class="goal-title">${esc(g.title)}</span>${g.done ? '<span class="tag done">Done 🎉</span>' : `<span class="muted">${p}%</span>`}<button class="x" title="Remove">×</button></div>
         <div class="bar"><div style="width:${p}%"></div></div>
         <div class="list"></div>
       </div>`);
+    $(".check", card).addEventListener("click", () => {
+      g.done = !g.done;
+      g.doneOn = g.done ? dayKey() : null;
+      $(".check", card).classList.toggle("on", g.done);
+      setTimeout(refresh, 420); // let the tick bounce before the card moves
+    });
     editable($(".goal-title", card), g.title, (v) => { g.title = v; refresh(); }, false);
     $(".x", card).addEventListener("click", () => {
       const i = S.goals.indexOf(g);
@@ -887,7 +894,7 @@ function demoData() {
   for (const s of [-60, -31, -3]) for (let i = 0; i < 5; i++) d.cycle.flow[k(s + i)] = i < 2 ? 3 - i : 1;
   d.lists.chores = [{ id: "c1", text: "Water the plants", repeat: "weekly" }, { id: "c2", text: "Laundry" }, { id: "c3", text: "Wipe the counters", repeat: "daily" }, { id: "c4", text: "Take the bins out", done: true, doneOn: k(0) }];
   d.lists.work = [{ id: "w1", text: "Reply to Sam about Thursday" }, { id: "w2", text: "Finish the monthly report\nCharts on page 3 still need labels" }];
-  d.goals = [{ id: "g1", title: "Read 12 books this year", steps: [{ id: "s1", text: "Pick the first three", done: true }, { id: "s2", text: "Finish book one", done: true }, { id: "s3", text: "Join the library" }] }];
+  d.goals = [{ id: "g1", title: "Read 12 books this year", steps: [{ id: "s1", text: "Pick the first three", done: true }, { id: "s2", text: "Finish book one", done: true }, { id: "s3", text: "Join the library" }] }, { id: "g2", title: "Learn to make sourdough", done: true, steps: [{ id: "s4", text: "Feed the starter", done: true }] }];
   d.notes = [{ id: "n1", title: "Gift ideas", body: "Candle from that shop on 5th\nThe blue scarf", updated: Date.now() - 4e6, pinned: true }, { id: "n2", title: "Recipes to try", body: "Lemon orzo\nMiso soup", updated: Date.now() - 9e7 }];
   d.ui.note = "n1";
   d.journal[k(-1)] = { text: "Quiet day. Went for a long walk.", mood: "Good" };
