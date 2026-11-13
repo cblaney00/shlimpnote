@@ -19,7 +19,7 @@ times of day; a tick per dose per day; last-7-days strip), **Cycle** (month cale
 click a day for light → medium → heavy → clear; predicts the next period from her
 average cycle, dashed days = expected), **Notes** (list + search + pin, autosaves),
 **Chores** (checklist; a chore can repeat every day / every week and comes back by
-itself), **Work** (checklist), **Goals** (goal with steps and a progress bar; a "✓ Mark done" button under the bar marks the whole goal done — it turns deep purple "Done 🎉" (tap to undo), title struck through, bar full, sinks to the bottom; `g.done`. 2026-11-13: was a small round tick first, but on her phone she missed it),
+itself), **Work** (checklist), **Goals** (each goal is a box she ticks off — her ask 2026-11-13: "be able to click on [a goal] and have it check off the list ... should not be measured in percentage points, it should just be a box that can be checked off". No % or bars anywhere. Jelly tick before the title on the Goals page; on Today's Goals card tapping anywhere on the goal ticks it (`tickGoal`). Done = struck through, sinks to the bottom; `g.done`. Optional steps under a goal still work),
 **Journal** (one entry per day with a mood).
 
 **Ask for a change** (sidebar bottom, his ask): she types a request; it is sent to him
