@@ -580,15 +580,15 @@ VIEWS.goals = (el) => {
   for (const g of [...S.goals.filter((x) => !x.done), ...S.goals.filter((x) => x.done)]) {
     const p = goalPct(g);
     const card = h(`<div class="card stack goal ${g.done ? "goal-done" : ""}" data-id="${g.id}">
-        <div class="row"><button class="check ${g.done ? "on" : ""}" aria-label="Goal done" title="${g.done ? "Not done yet" : "Mark this goal done"}"></button><span class="goal-title">${esc(g.title)}</span>${g.done ? '<span class="tag done">Done 🎉</span>' : `<span class="muted">${p}%</span>`}<button class="x" title="Remove">×</button></div>
+        <div class="row"><span class="goal-title">${esc(g.title)}</span>${g.done ? "" : `<span class="muted">${p}%</span>`}<button class="x" title="Remove">×</button></div>
         <div class="bar"><div style="width:${p}%"></div></div>
+        <div class="row"><button class="btn goal-btn ${g.done ? "on" : ""}" data-key="goal-${g.id}" title="${g.done ? "Tap to undo" : "Mark this goal done"}">${g.done ? "Done 🎉" : "✓ Mark done"}</button></div>
         <div class="list"></div>
       </div>`);
-    $(".check", card).addEventListener("click", () => {
+    $(".goal-btn", card).addEventListener("click", () => {
       g.done = !g.done;
       g.doneOn = g.done ? dayKey() : null;
-      $(".check", card).classList.toggle("on", g.done);
-      setTimeout(refresh, 420); // let the tick bounce before the card moves
+      setTimeout(refresh, 300); // let the button squish before the card moves
     });
     editable($(".goal-title", card), g.title, (v) => { g.title = v; refresh(); }, false);
     $(".x", card).addEventListener("click", () => {

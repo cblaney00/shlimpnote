@@ -906,3 +906,5 @@ html:not(.locked) #lock { display: none; }
 /* Goals: a finished goal (her tick on the goal itself) — title struck through, bar full. */
 .goal > .row > .check { flex: none; }
 .goal-done .goal-title { color: var(--muted); text-decoration: line-through; text-decoration-color: var(--faint); }
+.goal-btn { flex: none; white-space: nowrap; }
+.goal-btn.on { background: #7a4fc4; color: #fff; border-color: #7a4fc4; }
