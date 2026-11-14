@@ -161,7 +161,8 @@ function removeWithUndo(rowEl, label, doRemove, doRestore) {
   doRemove(); save(); drawNav();
   const u = h(`<div class="undo">${esc(label)} removed <button>Undo</button></div>`);
   rowEl.replaceWith(u);
-  const timer = setTimeout(() => { u.style.opacity = "0"; u.style.transition = "opacity .3s"; setTimeout(() => u.isConnected && refresh(), 300); }, 6000);
+  // When the line fades, just take it away — redrawing the page would wipe whatever she's typing.
+  const timer = setTimeout(() => { u.style.opacity = "0"; u.style.transition = "opacity .3s"; setTimeout(() => u.remove(), 300); }, 6000);
   $("button", u).addEventListener("click", () => { clearTimeout(timer); doRestore(); refresh(); });
 }
 
@@ -252,7 +253,23 @@ function dragSort(list, items) {
     const r = over.getBoundingClientRect();
     list.insertBefore(dragEl, e.clientY > r.top + r.height / 2 ? over.nextSibling : over);
   });
-  list.addEventListener("dragend", () => {
+  // Touch: hold the grip and slide.
+  list.addEventListener("pointerdown", (e) => {
+    if (e.pointerType === "mouse" || !e.target.closest(".grip")) return;
+    dragEl = e.target.closest(".item"); if (!dragEl) return;
+    e.preventDefault();
+    dragEl.classList.add("dragging");
+    const move = (ev) => {
+      const over = document.elementFromPoint(ev.clientX, ev.clientY)?.closest(".item");
+      if (!over || over === dragEl || over.parentElement !== list) return;
+      const r = over.getBoundingClientRect();
+      list.insertBefore(dragEl, ev.clientY > r.top + r.height / 2 ? over.nextSibling : over);
+    };
+    const end = () => { removeEventListener("pointermove", move); removeEventListener("pointerup", end); removeEventListener("pointercancel", end); finish(); };
+    addEventListener("pointermove", move); addEventListener("pointerup", end); addEventListener("pointercancel", end);
+  });
+  list.addEventListener("dragend", () => finish());
+  function finish() {
     if (!dragEl) return;
     dragEl.classList.remove("dragging"); dragEl = null;
     const order = [...list.querySelectorAll(".item")].map((n) => n.dataset.id);
@@ -260,7 +277,7 @@ function dragSort(list, items) {
     const rest = items.filter((i) => !order.includes(i.id));
     items.splice(0, items.length, ...order.map((id) => byId[id]), ...rest);
     save();
-  });
+  }
 }
 
 /* ---------------- Meds ---------------- */
@@ -562,7 +579,7 @@ VIEWS.chores = (el) => {
   const c = h(`<div class="card"></div>`);
   checklist(c, "chores", { placeholder: "Add a chore…", repeat: true });
   el.appendChild(c);
-  el.appendChild(h(`<div class="muted small" style="margin-top:10px">Hover a chore and click “Once” to make it come back every day or every week.</div>`));
+  el.appendChild(h(`<div class="muted small" style="margin-top:10px">Click “Once” on a chore to make it come back every day or every week.</div>`));
 };
 
 VIEWS.work = (el) => {
@@ -716,6 +733,7 @@ function merge3(base, mine, theirs) {
     const ids = [...mine.map((x) => x.id), ...theirs.map((x) => x.id).filter((id) => !(id in M))];
     return ids.map((id) => merge3(B[id], M[id], T[id])).filter((x) => x !== undefined);
   }
+  if (mine === undefined) return theirs; // deleted here but changed there: the edit wins
   return mine; // both changed the same thing: this device wins
 }
 
@@ -819,9 +837,18 @@ VIEWS.sync = (el) => {
 };
 
 
-async function sendRequests() {
+let sending = null;
+function sendRequests() {
+  // One run at a time, so a request can never be sent twice; a call during a run runs again after it.
+  if (sending) { sending.again = true; return sending.p; }
+  sending = { again: false };
+  sending.p = sendRequestsOnce().finally(() => { const again = sending.again; sending = null; if (again) sendRequests(); });
+  return sending.p;
+}
+async function sendRequestsOnce() {
   if (!CFG.repo || !deviceKey() || !navigator.onLine) return;
   let changed = false;
+  const cur = (r) => S.requests.find((x) => x.id === r.id) || r; // a sync may have replaced her data meanwhile
   for (const r of S.requests.filter((r) => r.status === "waiting")) {
     try {
       const res = await gh("/issues", {
@@ -832,21 +859,21 @@ async function sendRequests() {
           labels: ["from-shlimpnote"],
         }),
       });
-      if (res.ok) { const j = await res.json(); r.status = "sent"; r.issue = j.number; changed = true; }
+      if (res.ok) { const j = await res.json(); const c = cur(r); c.status = "sent"; c.issue = j.number; changed = true; }
     } catch (e) { break; }
   }
   // Her own ticks: close (or reopen) the issue on GitHub.
   for (const r of S.requests.filter((r) => r.push && r.issue)) {
     try {
       const res = await gh(`/issues/${r.issue}`, { method: "PATCH", body: JSON.stringify({ state: r.push }) });
-      if (res.ok) { delete r.push; changed = true; }
+      if (res.ok) { const c = cur(r); if (c.push === r.push) delete c.push; changed = true; }
     } catch (e) { break; }
   }
   // Has he finished any? A closed issue means done.
   for (const r of S.requests.filter((r) => r.status === "sent" && r.issue && !r.push)) {
     try {
       const res = await gh(`/issues/${r.issue}`);
-      if (res.ok) { const j = await res.json(); if (j.state === "closed") { r.status = "done"; changed = true; } }
+      if (res.ok) { const j = await res.json(); const c = cur(r); if (j.state === "closed" && c.status === "sent" && !c.push) { c.status = "done"; changed = true; } }
     } catch (e) { break; }
   }
   if (changed) { save(); if (current === "ask") refresh(); }
@@ -1010,7 +1037,7 @@ const Lock = (() => {
   $("[data-reset] button", el).addEventListener("click", reset);
   $("[data-reset] input", el).addEventListener("keydown", (e) => { if (e.key === "Enter") reset(); });
   document.addEventListener("keydown", (e) => {
-    if (el.hidden || e.target.matches("input")) return;
+    if (el.hidden || (e.target.matches && e.target.matches("input"))) return;
     if (/^[0-9]$/.test(e.key)) key(e.key);
     else if (e.key === "Backspace") key("back");
     else if (e.key === "Escape" && from) $("[data-cancel]", el).click();

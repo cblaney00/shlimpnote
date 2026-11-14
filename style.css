@@ -907,3 +907,9 @@ html:not(.locked) #lock { display: none; }
 .goal-done .goal-title { color: var(--muted); text-decoration: line-through; text-decoration-color: var(--faint); }
 .goal > .row > .check { flex: none; width: 34px; height: 34px; }
 .goal-tick { cursor: pointer; }
+
+/* Touch screens can't hover: always show a row's tools (×, Once/Every day) and its drag grip. */
+@media (hover: none) {
+  .item .tools, .item .grip { opacity: 1; }
+}
+.item .grip { touch-action: none; }

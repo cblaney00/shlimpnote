@@ -35,7 +35,9 @@ VibeNote (`../vibenote/CLAUDE.md`):
 - Clickable things look clickable (outlined/filled buttons that light up on hover).
 - Text boxes grow with what is typed (never a one-line box to arrow along).
 - Enter adds, Shift+Enter is a new line; click text to edit it in place.
-- Drag rows (by the ⠿ grip) to reorder.
+- Drag rows (by the ⠿ grip) to reorder — with a mouse or, on phones, a finger (pointer events in `dragSort`).
+- Touch screens (`hover: none`) always show a row's tools (×, repeat chip) and grip, since they can't hover.
+- Full feature check + how it was tested: `docs/check-2026-11-14.md` (Firefox remote-control script; redo it after big changes).
 - Works at any window size; under 760 px wide the sidebar becomes a top bar.
 - Look: **pastel colours** (her ask): lavender, mint, periwinkle, butter, peach, sky, lilac,
   blush on a near-white lilac page, soft plum-grey text. Tokens at the top of `style.css`.
@@ -171,7 +173,7 @@ Ask him before changing the look.
   in `app.js`: `syncNow`, `merge3`). Syncs on open, when she returns to the app, when back
   online, and 2.5 s after any change. Three-way merge against the last synced copy
   (`shlimpnote.base`): changes on both devices survive; same field changed on both → this
-  device wins; an edit beats a delete. Never swaps data while a text box is focused (retries).
+  device wins; an edit beats a delete (both ways — fixed 2026-11-14). Never swaps data while a text box is focused (retries).
   `ui` is never synced. The PIN travels with it as `S.lock` = "salt:hash" (PBKDF2-SHA256, one
   string so the merge can't mix two PINs); the PIN itself is never stored. A device with no
   PIN waits for its first sync (up to 8 s) before asking her to make one. Tested against the real repo 2026-11-10 (node harness, test file
