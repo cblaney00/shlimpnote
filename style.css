@@ -935,3 +935,6 @@ html:not(.locked) #lock { display: none; }
   .daily-cal { gap: 4px; }
   .daily-cal .day { aspect-ratio: auto; min-height: 46px; padding: 4px; }
 }
+/* Daily was laggy (his note 2026-11-16): the many little time chips in "Things to tick" and the
+   faded days (other months, future) stay still; they still squish when tapped. */
+.thing-times .chip, .daily-cal .day.out, .daily-cal .day.future { animation: none; rotate: none; }

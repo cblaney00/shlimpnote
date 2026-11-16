@@ -23,7 +23,7 @@ Everything ticked is in `S.meds` (`{id,name,dose,times}`, time `"Once"` = "Once 
 "Done") with ticks in `S.medLog` — habits and meds share it. Shower (`h-shower`, once) and Brush
 teeth (`h-teeth`, Morning + Bedtime) are added once by `seedDaily` (synced flag `S.dailySeeded`,
 runs after the first sync). `?page=meds`/old saved page map to `daily`. Android home-screen
-widget: asked, a web app can't make a real one; his answer "no widget for now"), **Cycle** (month calendar:
+widget: asked, a web app can't make a real one; his answer "no widget for now". "only the calendar tab is laggy": the time chips in Things to tick and faded days don't goo-animate, last block of `style.css`), **Cycle** (month calendar:
 click a day for light → medium → heavy → clear; predicts the next period from her
 average cycle, dashed days = expected), **Notes** (list + search + pin, autosaves),
 **Chores** (checklist; a chore can repeat every day / every week and comes back by
