@@ -913,3 +913,25 @@ html:not(.locked) #lock { display: none; }
   .item .tools, .item .grip { opacity: 1; }
 }
 .item .grip { touch-action: none; }
+
+/* Daily (2026-11-16): one calendar for showers, teeth and meds. Each day shows "ticked/total". */
+.daily-cal .day { flex-direction: column; align-items: flex-end; justify-content: space-between; }
+.day .count { align-self: center; font-size: .78rem; font-weight: 700; color: #3f6f5a; line-height: 1; }
+.day .count.all { color: #fff; background: #4fae82; border-radius: 999px; padding: 3px 7px; font-weight: 800; }
+.day.picked { outline: 3px solid #4fae82; outline-offset: 1px; }
+.day.future { opacity: .6; cursor: default; }
+.daily-split { grid-template-columns: 1fr minmax(240px, 340px); }
+.thing .text { display: flex; flex-direction: column; gap: 6px; }
+.thing-times { flex-wrap: wrap; gap: 6px; }
+.thing-times .chip { padding: 4px 10px; font-size: .82rem; }
+@media (max-width: 760px) {
+  .daily-split { grid-template-columns: 1fr; }
+  .day .count { font-size: .68rem; }
+  .day .count.all { padding: 2px 5px; }
+}
+.cal { grid-template-columns: repeat(7, minmax(0, 1fr)); }
+.cal .day { min-width: 0; }
+@media (max-width: 760px) {
+  .daily-cal { gap: 4px; }
+  .daily-cal .day { aspect-ratio: auto; min-height: 46px; padding: 4px; }
+}

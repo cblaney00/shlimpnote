@@ -55,7 +55,7 @@ const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "
 /* ---------------- Pages ---------------- */
 const PAGES = [
   { id: "today", name: "Today", color: "var(--lavender)" },
-  { id: "meds", name: "Meds", color: "var(--mint)" },
+  { id: "daily", name: "Daily", color: "var(--mint)" },
   { id: "cycle", name: "Cycle", color: "var(--peri)" },
   { id: "notes", name: "Notes", color: "var(--butter)" },
   { id: "chores", name: "Chores", color: "var(--peach)" },
@@ -66,9 +66,10 @@ const PAGES = [
 const ASK = { id: "ask", name: "Ask for a change" };
 const SYNC = { id: "sync", name: "Your devices", color: "var(--sky)" };
 let current = (location.search.match(/page=(\w+)/) || [])[1] || S.ui.page || "today";
+if (current === "meds") current = "daily"; // Meds became part of Daily (2026-11-16)
 
 function counts(id) {
-  if (id === "meds") { const t = medsToday(); return t.total ? `${t.taken}/${t.total}` : ""; }
+  if (id === "daily") { const t = medsToday(); return t.total ? `${t.taken}/${t.total}` : ""; }
   if (id === "chores" || id === "work") { const n = S.lists[id].filter((i) => !i.done).length; return n || ""; }
   if (id === "notes") return S.notes.length || "";
   return "";
@@ -281,7 +282,8 @@ function dragSort(list, items) {
 }
 
 /* ---------------- Meds ---------------- */
-const TIMES = ["Morning", "Midday", "Evening", "Bedtime"];
+const TIMES = ["Once", "Morning", "Midday", "Evening", "Bedtime"];
+const TIME_WORD = { Once: "Once a day" };
 function medsToday(k = dayKey()) {
   const log = S.medLog[k] || {};
   let total = 0, taken = 0;
@@ -293,15 +295,59 @@ function toggleDose(m, t, k = dayKey()) {
   const id = m.id + "|" + t;
   if (log[id]) delete log[id]; else log[id] = Date.now();
 }
-function doseButton(m, t) {
-  const on = !!(S.medLog[dayKey()] || {})[m.id + "|" + t];
-  const b = h(`<button data-key="dose-${m.id}-${t}" class="dose ${on ? "on" : ""}"><span class="check ${on ? "on" : ""}"></span>${esc(t)}</button>`);
+function doseButton(m, t, k = dayKey()) {
+  const on = !!(S.medLog[k] || {})[m.id + "|" + t];
+  const b = h(`<button data-key="dose-${m.id}-${t}-${k}" class="dose ${on ? "on" : ""}"><span class="check ${on ? "on" : ""}"></span>${t === "Once" ? "Done" : esc(t)}</button>`);
   b.addEventListener("click", () => {
-    toggleDose(m, t);
+    toggleDose(m, t, k);
     b.classList.toggle("on"); $(".check", b).classList.toggle("on");
-    save(); drawNav();
+    save(); drawNav(); dayCount(k);
   });
   return b;
+}
+// The "3/5" under a day on the Daily calendar.
+function countText(k) { const t = medsToday(k); return t.total && (t.taken || k === dayKey()) ? `${t.taken}/${t.total}` : ""; }
+function dayCount(k) {
+  const c = document.querySelector(`[data-key="day-${k}"] .count`); if (!c) return;
+  const t = medsToday(k);
+  c.textContent = countText(k); c.classList.toggle("all", t.total > 0 && t.taken === t.total);
+}
+// Everything she ticks for one day: each thing (shower, teeth, a med) with a button per time.
+function dailyRows(k) {
+  const rows = h(`<div class="stack"></div>`);
+  for (const m of S.meds) {
+    const r = h(`<div><div style="font-weight:600;margin-bottom:6px">${esc(m.name)} <span class="muted small">${esc(m.dose || "")}</span></div><div class="dose-row"></div></div>`);
+    m.times.forEach((t) => $(".dose-row", r).appendChild(doseButton(m, t, k)));
+    rows.appendChild(r);
+  }
+  return rows;
+}
+// Shower and teeth are added once (synced flag; fixed ids so two devices can't double them).
+// Called after the first sync, so a removal on her other device isn't undone here.
+function seedDaily() {
+  if (S.dailySeeded) return;
+  const add = [{ id: "h-shower", name: "Shower", dose: "", times: ["Once"] }, { id: "h-teeth", name: "Brush teeth", dose: "", times: ["Morning", "Bedtime"] }];
+  S.meds.unshift(...add.filter((a) => !S.meds.some((m) => m.id === a.id)));
+  S.dailySeeded = true;
+  refresh();
+}
+
+/* A month of day buttons (Mon first) — used by Cycle and Daily. */
+function monthGrid(grid, shown, makeCell) {
+  const monday = (d) => (d.getDay() + 6) % 7;
+  ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].forEach((d) => grid.appendChild(h(`<div class="dow">${d}</div>`)));
+  let d = addDays(shown, -monday(shown));
+  for (let i = 0; i < 42; i++) {
+    grid.appendChild(makeCell(dayKey(d), d.getMonth() !== shown.getMonth(), d.getDate()));
+    d = addDays(d, 1);
+    if (i === 34 && d.getMonth() !== shown.getMonth()) break;
+  }
+}
+function shownMonth(uiKey) { return S.ui[uiKey] ? parseDay(S.ui[uiKey]) : new Date(new Date().getFullYear(), new Date().getMonth(), 1); }
+function monthArrows(card, shown, uiKey) {
+  const move = (n) => { S.ui[uiKey] = dayKey(new Date(shown.getFullYear(), shown.getMonth() + n, 1)); refresh(); };
+  $("[data-prev]", card).addEventListener("click", () => move(-1));
+  $("[data-next]", card).addEventListener("click", () => move(1));
 }
 
 /* ---------------- Cycle ---------------- */
@@ -342,17 +388,9 @@ const VIEWS = {};
 VIEWS.today = (el) => {
   const grid = h(`<div class="grid"></div>`);
   // Meds
-  const meds = h(`<div class="card" style="--tone:var(--mint)"><h2><span class="nav-dot" style="background:var(--mint)"></span>Meds today</h2></div>`);
-  if (!S.meds.length) meds.appendChild(emptyLink("No meds added yet.", "Add one", "meds"));
-  else {
-    const rows = h(`<div class="stack"></div>`);
-    for (const m of S.meds) {
-      const r = h(`<div><div style="font-weight:600;margin-bottom:6px">${esc(m.name)} <span class="muted small">${esc(m.dose || "")}</span></div><div class="dose-row"></div></div>`);
-      m.times.forEach((t) => $(".dose-row", r).appendChild(doseButton(m, t)));
-      rows.appendChild(r);
-    }
-    meds.appendChild(rows);
-  }
+  const meds = h(`<div class="card" style="--tone:var(--mint)"><h2><span class="nav-dot" style="background:var(--mint)"></span>Daily</h2></div>`);
+  if (!S.meds.length) meds.appendChild(emptyLink("Nothing to tick yet.", "Add something", "daily"));
+  else meds.appendChild(dailyRows(dayKey()));
   grid.appendChild(meds);
 
   // Cycle
@@ -414,61 +452,92 @@ function emptyLink(text, btn, page) {
   return d;
 }
 
-VIEWS.meds = (el) => {
-  // Add a med: name, dose, and when she takes it.
-  const pick = new Set(["Morning"]);
-  const add = h(`<div class="card stack">
+VIEWS.daily = (el) => {
+  // Showers, teeth and meds on one calendar: each day shows how many ticks of the total.
+  const today = dayKey();
+  let pick = S.ui.dailyDay && S.ui.dailyDay <= today ? S.ui.dailyDay : today;
+  const shown = shownMonth("dailyMonth");
+  const wrap = h(`<div class="split cycle-split daily-split"></div>`);
+
+  const cal = h(`<div class="card">
+      <div class="cal-head"><button class="link" data-prev>‹</button><h2>${shown.toLocaleDateString(undefined, { month: "long", year: "numeric" })}</h2><button class="link" data-next>›</button></div>
+      <div class="cal daily-cal"></div>
+      <div class="muted small" style="margin-top:8px">Click a day to see or tick what you did that day.</div>
+    </div>`);
+  monthGrid($(".cal", cal), shown, (k, out, n) => {
+    const t = medsToday(k);
+    const cell = h(`<button data-key="day-${k}" class="day ${out ? "out" : ""} ${k === today ? "today" : ""} ${k === pick ? "picked" : ""} ${k > today ? "future" : ""}">${n}<span class="count ${t.total && t.taken === t.total ? "all" : ""}">${k > today ? "" : countText(k)}</span></button>`);
+    cell.addEventListener("click", () => { if (k > today) return; S.ui.dailyDay = k; refresh(); });
+    return cell;
+  });
+  monthArrows(cal, shown, "dailyMonth");
+  wrap.appendChild(cal);
+
+  const day = h(`<div class="card"><h2>${pick === today ? "Today" : fmtDay(pick)}</h2></div>`);
+  if (!S.meds.length) day.appendChild(h(`<div class="muted">Add something below and it will show here, with a tick for each time.</div>`));
+  else day.appendChild(dailyRows(pick));
+  wrap.appendChild(day);
+  el.appendChild(wrap);
+
+  // The things she ticks: add, rename, change dose and times, reorder, remove.
+  const box = h(`<div class="card stack" style="margin-top:18px"><h2>Things to tick</h2></div>`);
+  const sel = new Set(["Once"]);
+  const add = h(`<div class="stack">
       <div class="row">
-        <input class="field" data-name placeholder="Medicine name" style="flex:2">
-        <input class="field" data-dose placeholder="Dose (e.g. 50 mg)" style="flex:1">
+        <input class="field" data-name placeholder="e.g. Shower, a medicine, skincare" style="flex:2">
+        <input class="field" data-dose placeholder="Dose (meds only)" style="flex:1">
       </div>
       <div class="row"><span class="muted">When:</span><span class="row" data-times></span><button class="btn" style="margin-left:auto">Add</button></div>
     </div>`);
   TIMES.forEach((t) => {
-    const c = h(`<button data-key="time-${t}" class="chip ${pick.has(t) ? "on" : ""}">${t}</button>`);
-    c.addEventListener("click", () => { pick.has(t) ? pick.delete(t) : pick.add(t); c.classList.toggle("on"); });
+    const c = h(`<button data-key="time-${t}" class="chip ${sel.has(t) ? "on" : ""}">${TIME_WORD[t] || t}</button>`);
+    c.addEventListener("click", () => { sel.has(t) ? sel.delete(t) : sel.add(t); c.classList.toggle("on"); });
     $("[data-times]", add).appendChild(c);
   });
   const doAdd = () => {
     const name = $("[data-name]", add).value.trim();
     if (!name) { $("[data-name]", add).focus(); return; }
-    S.meds.push({ id: uid(), name, dose: $("[data-dose]", add).value.trim(), times: TIMES.filter((t) => pick.has(t)).length ? TIMES.filter((t) => pick.has(t)) : ["Morning"] });
+    const times = TIMES.filter((t) => sel.has(t));
+    S.meds.push({ id: uid(), name, dose: $("[data-dose]", add).value.trim(), times: times.length ? times : ["Once"] });
     refresh();
   };
   $(".btn", add).addEventListener("click", doAdd);
   add.querySelectorAll("input").forEach((i) => i.addEventListener("keydown", (e) => { if (e.key === "Enter") doAdd(); }));
-  el.appendChild(add);
+  box.appendChild(add);
 
-  const list = h(`<div class="stack" style="margin-top:18px"></div>`);
-  if (!S.meds.length) list.appendChild(h(`<div class="empty">Add a medicine above and it will show here and on Today, with a tick for each time you take it.</div>`));
+  const list = h(`<div class="list"></div>`);
   for (const m of S.meds) {
-    const card = h(`<div class="card med">
-        <div class="med-head"><span class="med-name">${esc(m.name)}</span><span class="med-dose">${esc(m.dose || "add dose")}</span><button class="x" title="Remove">×</button></div>
-        <div class="dose-row"></div>
-        <div class="row"><span class="muted small">Last 7 days</span><div class="week"></div></div>
+    const row = h(`<div class="item thing" data-id="${m.id}" draggable="true">
+        <span class="grip" title="Drag to move">⠿</span>
+        <div class="text"><div><span class="med-name">${esc(m.name)}</span> <span class="med-dose">${esc(m.dose || "+ dose")}</span></div><div class="row thing-times"></div></div>
+        <div class="tools"><button class="x" title="Remove">×</button></div>
       </div>`);
-    m.times.forEach((t) => $(".dose-row", card).appendChild(doseButton(m, t)));
-    for (let i = 6; i >= 0; i--) {
-      const k = dayKey(addDays(new Date(), -i));
-      const log = S.medLog[k] || {};
-      const n = m.times.filter((t) => log[m.id + "|" + t]).length;
-      $(".week", card).appendChild(h(`<span class="${n === m.times.length ? "full" : n ? "part" : ""}" title="${fmtDay(k)}">${parseDay(k).toLocaleDateString(undefined, { weekday: "narrow" })}</span>`));
-    }
-    editable($(".med-name", card), m.name, (v) => { m.name = v; refresh(); }, false);
-    editable($(".med-dose", card), m.dose || "", (v) => { m.dose = v; refresh(); }, false);
-    $(".x", card).addEventListener("click", () => {
-      const i = S.meds.indexOf(m);
-      removeWithUndo(card, m.name, () => S.meds.splice(i, 1), () => S.meds.splice(i, 0, m));
+    TIMES.forEach((t) => {
+      const c = h(`<button data-key="t-${m.id}-${t}" class="chip ${m.times.includes(t) ? "on" : ""}">${TIME_WORD[t] || t}</button>`);
+      c.addEventListener("click", () => {
+        const next = m.times.includes(t) ? m.times.filter((x) => x !== t) : TIMES.filter((x) => x === t || m.times.includes(x));
+        if (!next.length) return; // always at least one time
+        m.times = next; refresh();
+      });
+      $(".thing-times", row).appendChild(c);
     });
-    list.appendChild(card);
+    editable($(".med-name", row), m.name, (v) => { m.name = v; refresh(); }, false);
+    editable($(".med-dose", row), m.dose || "", (v) => { m.dose = v; refresh(); }, false);
+    $(".x", row).addEventListener("click", () => {
+      const i = S.meds.indexOf(m);
+      removeWithUndo(row, m.name, () => S.meds.splice(i, 1), () => S.meds.splice(i, 0, m));
+    });
+    list.appendChild(row);
   }
-  el.appendChild(list);
+  box.appendChild(list);
+  dragSort(list, S.meds);
+  el.appendChild(box);
 };
 
 VIEWS.cycle = (el) => {
   const info = cycleInfo();
   const guess = predicted(info);
-  const shown = S.ui.calMonth ? parseDay(S.ui.calMonth) : new Date(new Date().getFullYear(), new Date().getMonth(), 1);
+  const shown = shownMonth("calMonth");
   const wrap = h(`<div class="split cycle-split"></div>`);
 
   const cal = h(`<div class="card">
@@ -477,27 +546,18 @@ VIEWS.cycle = (el) => {
       <div class="legend"><span><i style="background:#8f98ec"></i>Light</span><span><i style="background:#6f79e0"></i>Medium</span><span><i style="background:#4f5acc"></i>Heavy</span><span><i style="border:1.5px dashed var(--peri-line)"></i>Expected</span></div>
       <div class="muted small" style="margin-top:8px">Click a day to mark it. Click again for heavier; a fourth click clears it.</div>
     </div>`);
-  const grid = $(".cal", cal);
-  const monday = (d) => (d.getDay() + 6) % 7;
-  ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].forEach((d) => grid.appendChild(h(`<div class="dow">${d}</div>`)));
-  let d = addDays(shown, -monday(shown));
   const today = dayKey();
-  for (let i = 0; i < 42; i++) {
-    const k = dayKey(d);
+  monthGrid($(".cal", cal), shown, (k, out, n) => {
     const f = S.cycle.flow[k] || 0;
-    const cell = h(`<button data-key="day-${k}" class="day ${d.getMonth() !== shown.getMonth() ? "out" : ""} ${k === today ? "today" : ""} ${f ? "f" + f : ""} ${!f && guess.has(k) ? "guess" : ""}">${d.getDate()}</button>`);
+    const cell = h(`<button data-key="day-${k}" class="day ${out ? "out" : ""} ${k === today ? "today" : ""} ${f ? "f" + f : ""} ${!f && guess.has(k) ? "guess" : ""}">${n}</button>`);
     cell.addEventListener("click", () => {
       const v = ((S.cycle.flow[k] || 0) + 1) % 4;
       if (v) S.cycle.flow[k] = v; else delete S.cycle.flow[k];
       refresh();
     });
-    grid.appendChild(cell);
-    d = addDays(d, 1);
-    if (i === 34 && d.getMonth() !== shown.getMonth()) break;
-  }
-  const move = (n) => { S.ui.calMonth = dayKey(new Date(shown.getFullYear(), shown.getMonth() + n, 1)); refresh(); };
-  $("[data-prev]", cal).addEventListener("click", () => move(-1));
-  $("[data-next]", cal).addEventListener("click", () => move(1));
+    return cell;
+  });
+  monthArrows(cal, shown, "calMonth");
   wrap.appendChild(cal);
 
   const side = h(`<div class="stack"></div>`);
@@ -777,6 +837,7 @@ async function syncNow() {
     }
     try { localStorage.setItem(BASE_STORE, JSON.stringify(merged)); } catch (e) { /* storage blocked */ }
     syncState.ok = true; syncState.at = Date.now();
+    seedDaily();
   } catch (e) {
     syncState.ok = false;
   } finally {
@@ -916,9 +977,10 @@ VIEWS.ask = (el) => {
 
 function demoData() {
   const d = blank(), k = (n) => dayKey(addDays(new Date(), n));
-  d.meds = [{ id: "m1", name: "Vitamin D", dose: "1000 IU", times: ["Morning"] }, { id: "m2", name: "Sertraline", dose: "50 mg", times: ["Morning", "Evening"] }];
-  d.medLog[k(0)] = { "m1|Morning": 1 };
-  for (let i = 1; i < 6; i++) d.medLog[k(-i)] = { "m1|Morning": 1, "m2|Morning": 1, ...(i % 2 ? { "m2|Evening": 1 } : {}) };
+  d.meds = [{ id: "h-shower", name: "Shower", dose: "", times: ["Once"] }, { id: "h-teeth", name: "Brush teeth", dose: "", times: ["Morning", "Bedtime"] }, { id: "m1", name: "Vitamin D", dose: "1000 IU", times: ["Morning"] }, { id: "m2", name: "Sertraline", dose: "50 mg", times: ["Morning", "Evening"] }];
+  d.dailySeeded = true;
+  d.medLog[k(0)] = { "m1|Morning": 1, "h-teeth|Morning": 1 };
+  for (let i = 1; i < 12; i++) d.medLog[k(-i)] = { "m1|Morning": 1, "m2|Morning": 1, "h-teeth|Morning": 1, ...(i % 2 ? { "m2|Evening": 1, "h-shower|Once": 1, "h-teeth|Bedtime": 1 } : {}) };
   for (const s of [-60, -31, -3]) for (let i = 0; i < 5; i++) d.cycle.flow[k(s + i)] = i < 2 ? 3 - i : 1;
   d.lists.chores = [{ id: "c1", text: "Water the plants", repeat: "weekly" }, { id: "c2", text: "Laundry" }, { id: "c3", text: "Wipe the counters", repeat: "daily" }, { id: "c4", text: "Take the bins out", done: true, doneOn: k(0) }];
   d.lists.work = [{ id: "w1", text: "Reply to Sam about Thursday" }, { id: "w2", text: "Finish the monthly report\nCharts on page 3 still need labels" }];
@@ -1087,6 +1149,7 @@ resetRepeats();
 drawNav();
 render();
 drawSync();
+if (!deviceKey()) seedDaily(); // not connected: no other device to wait for
 sendRequests();
 Lock.start().then(() => syncNow());
 window.addEventListener("online", () => { sendRequests(); syncNow(); });

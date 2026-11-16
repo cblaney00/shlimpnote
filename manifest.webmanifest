@@ -2,7 +2,7 @@
   "id": "/shlimpnote/",
   "name": "ShlimpNote",
   "short_name": "ShlimpNote",
-  "description": "Meds, cycle, notes, chores, work, goals and journal in one squishy jelly notebook.",
+  "description": "Daily ticks (showers, teeth, meds), cycle, notes, chores, work, goals and journal in one squishy jelly notebook.",
   "start_url": "/shlimpnote/",
   "scope": "/shlimpnote/",
   "display": "standalone",

@@ -8,6 +8,7 @@ when one is finished, tick it and move it to **Done**.
 
 ## Done
 
+- [x] she needs a calendar for when she showered and for when she brushed her teeth, it should be one calendar in the app with the ability to chcek off multiple things per day, the meds tab should also be condensed into this calendar function. Can we make an android widget for her phone? She has a samsung A35 and is running the most current UI right now (Daily page; widget: not for now)
 - [x] add a password to schlimpnote to be set up the next time she logs in/ she can also set it up whenever she wants
 - [x] justus also sent a request to shlimpnote about making her phone less laggy and hot
 - [x] the goals tab wont let her mark a goal as complete

@@ -13,9 +13,17 @@ ShlimpNote is a soft, pastel all-in-one notebook that insideabush is making **fo
 girlfriend**, who uses **Windows**. It must feel like a normal app on her computer and
 always run the newest version from GitHub when she opens it (his ask, 2026-11-10).
 
-Pages (sidebar, each with its own pastel dot): **Today** (overview cards: meds to tick,
-cycle status, chores, work, journal prompt, goals), **Meds** (each med with dose and
-times of day; a tick per dose per day; last-7-days strip), **Cycle** (month calendar:
+Pages (sidebar, each with its own pastel dot): **Today** (overview cards: Daily ticks,
+cycle status, chores, work, journal prompt, goals), **Daily** (2026-11-16, his ask: "one
+calendar ... check off multiple things per day, the meds tab should also be condensed into
+this". Replaced the Meds page; mint. Month calendar, each day up to today shows "ticked/total"
+(his pick: a count, not dots/fill; green bubble = all done); click a past day to see/fix its
+ticks; right card = that day's checklist; "Things to tick" = add/rename/dose/times/drag/remove.
+Everything ticked is in `S.meds` (`{id,name,dose,times}`, time `"Once"` = "Once a day", button
+"Done") with ticks in `S.medLog` — habits and meds share it. Shower (`h-shower`, once) and Brush
+teeth (`h-teeth`, Morning + Bedtime) are added once by `seedDaily` (synced flag `S.dailySeeded`,
+runs after the first sync). `?page=meds`/old saved page map to `daily`. Android home-screen
+widget: asked, a web app can't make a real one; his answer "no widget for now"), **Cycle** (month calendar:
 click a day for light → medium → heavy → clear; predicts the next period from her
 average cycle, dashed days = expected), **Notes** (list + search + pin, autosaves),
 **Chores** (checklist; a chore can repeat every day / every week and comes back by
