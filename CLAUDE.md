@@ -208,8 +208,8 @@ Ask him before changing the look.
 - **Built-in key (2026-11-18, his ask: "can we just have them automatically sync? it doesnt really need to be secure"; told it would be public, said "i allow it")**: `config.js` `key` = a fine-grained token "ShlimpNote auto" (Contents + Issues on shlimpnote-data only, no expiry), base64 of the reversed string. `deviceKey()` uses a pasted code first, else this one, so every device syncs by itself; `?demo` never gets a key. A device's first sync (no base) lets GitHub win where they disagree. The older pasted-code flow below still works.
 - **Connect code** = a fine-grained GitHub token (Contents + Issues read/write on
   shlimpnote-data only) that **he** makes on github.com; it is stored only on her devices
-  (`localStorage` `shlimpnote.key`), entered on the "Your devices" page (tap the line under
-  Ask for a change) or via `…/shlimpnote/#connect=CODE`. **Never put it in this repo** — the
+  (`localStorage` `shlimpnote.key`, wins over the built-in one), entered on the "Your devices" page (tap the line under
+  Ask for a change) or via `…/shlimpnote/#connect=CODE`. Only the built-in key above is in this repo (his OK); the
   repo is public. The manual tells him how to make one.
 - "Ask for a change" requests become issues (label `from-shlimpnote`) in shlimpnote-data;
   a closed issue shows as Done in her app. To work on them:
