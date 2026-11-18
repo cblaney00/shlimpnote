@@ -25,6 +25,7 @@ const blank = () => ({
   goals: [],
   journal: {},
   requests: [],
+  fed: {},
   ui: {},
 });
 let S = load();
@@ -63,25 +64,49 @@ const PAGES = [
   { id: "goals", name: "Goals", color: "var(--lilac)" },
   { id: "journal", name: "Journal", color: "var(--blush)" },
 ];
+/* Profiles (his ask, 2026-11-18): which ShlimpNote opens depends on the PIN typed.
+   Justus's PIN (S.lock) opens all of it; Christian's PIN (S.lock2) opens only FatChat,
+   where they both tick off feeding the cats. Which one is in use is kept per device for
+   this visit only (sessionStorage), never synced. */
+const FATCHAT = { id: "fatchat", name: "FatChat", color: "var(--apricot)" };
+PAGES.push(FATCHAT);
+const NAMES = { justus: "Justus", christian: "Christian" };
+const PROFILE_STORE = "shlimpnote.profile";
+let profile = "justus";
+try { profile = (DEMO ? (location.search.match(/profile=(\w+)/) || [])[1] : sessionStorage.getItem(PROFILE_STORE)) || "justus"; } catch (e) { /* stays Justus */ }
+if (!NAMES[profile]) profile = "justus";
+const pages = () => (profile === "christian" ? [FATCHAT] : PAGES);
+function fixCurrent() {
+  if (!pages().some((p) => p.id === current) && current !== "sync" && !(current === "ask" && profile !== "christian")) current = pages()[0].id;
+}
+function setProfile(who) {
+  profile = who;
+  try { sessionStorage.setItem(PROFILE_STORE, who); } catch (e) { /* just for this visit */ }
+  current = S.ui.page = pages()[0].id; // a different person starts on their own first page
+  save(); drawNav(); render(true);
+}
 const ASK = { id: "ask", name: "Ask for a change" };
 const SYNC = { id: "sync", name: "Your devices", color: "var(--sky)" };
 let current = (location.search.match(/page=(\w+)/) || [])[1] || S.ui.page || "today";
 if (current === "meds") current = "daily"; // Meds became part of Daily (2026-11-16)
+fixCurrent();
 
 function counts(id) {
   if (id === "daily") { const t = medsToday(); return t.total ? `${t.taken}/${t.total}` : ""; }
   if (id === "chores" || id === "work") { const n = S.lists[id].filter((i) => !i.done).length; return n || ""; }
   if (id === "notes") return S.notes.length || "";
+  if (id === "fatchat") return `${fedCount()}/2`;
   return "";
 }
 
 function drawNav() {
-  $("#nav").innerHTML = PAGES.map((p) => `
+  $("#nav").innerHTML = pages().map((p) => `
     <button class="nav-item ${p.id === current ? "on" : ""}" data-go="${p.id}" style="--c:${p.color}">
-      <span class="nav-dot" style="background:${p.color}"></span>${p.name}
+      ${p.id === "fatchat" ? `<span class="nav-cat">${window.catChicken ? catChicken() : ""}</span>` : `<span class="nav-dot" style="background:${p.color}"></span>`}${p.name}
       <span class="nav-count">${counts(p.id)}</span>
     </button>`).join("");
   $("#ask-btn").classList.toggle("on", current === "ask");
+  $("#ask-btn").hidden = profile === "christian";
   if (window.Squish) Squish.breathe($("#sidebar"));
 }
 
@@ -95,9 +120,9 @@ function go(id) {
 }
 
 function render(animate = false) {
-  const page = PAGES.find((p) => p.id === current) || (current === "sync" ? SYNC : ASK);
+  const page = pages().find((p) => p.id === current) || (current === "sync" ? SYNC : ASK);
   $("#page-title").textContent = page.id === "today" ? greeting() : page.name;
-  $("#page-sub").textContent = page.id === "today" ? fmtDay(dayKey(), { weekday: "long", day: "numeric", month: "long" }) : "";
+  $("#page-sub").textContent = page.id === "today" || page.id === "fatchat" ? fmtDay(dayKey(), { weekday: "long", day: "numeric", month: "long" }) : "";
   const el = $("#page");
   document.documentElement.style.setProperty("--tone", page.color || "var(--lavender)");
   el.innerHTML = "";
@@ -443,8 +468,49 @@ VIEWS.today = (el) => {
     gc.appendChild(st);
   }
   grid.appendChild(gc);
+
+  // FatChat
+  const fc = h(`<div class="card" style="--tone:var(--apricot)"><h2><span class="nav-cat">${catChicken()}</span>FatChat</h2></div>`);
+  fc.appendChild(emptyLink(MEALS.map(([m, name, icon]) => { const f = (S.fed[dayKey()] || {})[m]; return `${icon} ${name}: ${f ? f.by + " " + clock(f.at) : "not yet"}`; }).join("  ·  "), "Open", "fatchat"));
+  grid.appendChild(fc);
   el.appendChild(grid);
 };
+
+/* ---------------- FatChat ----------------
+   His ask (2026-11-18): keep track of whether the cats were fed, and when. Two buttons a
+   day, Morning and Night; whoever ticks one, it shows for the other (synced like the rest,
+   in S.fed = { day: { morning: {by, at}, night: {by, at} } }). Tap again to untick. */
+const MEALS = [["morning", "Morning", "☀️"], ["night", "Night", "🌙"]];
+const clock = (t) => new Date(t).toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit" });
+const fedCount = (k = dayKey()) => MEALS.filter(([m]) => (S.fed[k] || {})[m]).length;
+const fedLine = (f) => (f ? `Fed by ${f.by} · ${clock(f.at)}` : "Not yet");
+
+VIEWS.fatchat = (el) => {
+  const k = dayKey();
+  const card = h(`<div class="card fat-card"><div class="fat-pic">${catChicken()}</div><div class="feed-row"></div></div>`);
+  for (const [m, name, icon] of MEALS) {
+    const on = () => (S.fed[k] || {})[m];
+    const b = h(`<button class="btn feed ${on() ? "on" : ""}" data-key="feed-${m}-${k}"><span class="feed-icon">${icon}</span><span class="feed-name">${name}</span><span class="feed-by">${esc(fedLine(on()))}</span></button>`);
+    b.addEventListener("click", () => {
+      const day = (S.fed[k] = S.fed[k] || {});
+      if (day[m]) delete day[m]; else day[m] = { by: NAMES[profile], at: Date.now() };
+      if (!Object.keys(day).length) delete S.fed[k];
+      b.classList.toggle("on", !!on());
+      $(".feed-by", b).textContent = fedLine(on());
+      save(); drawNav(); scheduleSync(400); // the other person sees it as soon as possible
+    });
+    $(".feed-row", card).appendChild(b);
+  }
+  el.appendChild(card);
+  const past = h(`<div class="card stack"><h2>Past days</h2></div>`);
+  for (let i = 1; i <= 7; i++) {
+    const d = dayKey(addDays(new Date(), -i)), day = S.fed[d] || {};
+    past.appendChild(h(`<div class="side-row fed-past"><b>${fmtDay(d)}</b>${MEALS.map(([m, , icon]) => `<span class="${day[m] ? "" : "muted"}">${icon} ${day[m] ? `${esc(day[m].by)} ${clock(day[m].at)}` : "—"}</span>`).join("")}</div>`));
+  }
+  el.appendChild(past);
+};
+// While FatChat is open, check for the other person's ticks every 20 s.
+setInterval(() => { if (current === "fatchat" && document.visibilityState === "visible" && $("#lock").hidden) syncNow(); }, 20000);
 
 function emptyLink(text, btn, page) {
   const d = h(`<div class="row" style="justify-content:space-between"><span class="muted">${esc(text)}</span><button class="link">${esc(btn)} ›</button></div>`);
@@ -887,13 +953,24 @@ VIEWS.sync = (el) => {
   el.appendChild(card);
   // His ask (2026-11-11): she can change her PIN whenever she wants.
   if (!DEMO) {
+    const me = profile === "christian" ? "lock2" : "lock";
     const pin = h(`<div class="card stack" style="--tone:var(--lilac)">
         <h2>Your PIN</h2>
-        <div>${S.lock ? "ShlimpNote asks for your 4-number PIN each time it opens, on all your devices." : "No PIN yet."}</div>
+        <div>${S[me] ? "ShlimpNote asks for your 4-number PIN each time it opens, on all your devices." : "No PIN yet."}</div>
         <div class="row"><button class="btn" data-pin>Change PIN</button></div>
       </div>`);
-    $("[data-pin]", pin).addEventListener("click", () => Lock.change());
+    $("[data-pin]", pin).addEventListener("click", () => Lock.change(profile));
     el.appendChild(pin);
+    // His ask (2026-11-18): Christian's own PIN opens a ShlimpNote with only FatChat.
+    if (profile === "justus") {
+      const his = h(`<div class="card stack" style="--tone:var(--apricot)">
+          <h2>Christian's PIN</h2>
+          <div>${S.lock2 ? "Typing Christian's PIN opens a ShlimpNote with only FatChat." : "Make a PIN for Christian. Typing it opens a ShlimpNote with only FatChat."}</div>
+          <div class="row"><button class="btn" data-pin2>${S.lock2 ? "Change Christian's PIN" : "Make Christian's PIN"}</button></div>
+        </div>`);
+      $("[data-pin2]", his).addEventListener("click", () => Lock.change("christian"));
+      el.appendChild(his);
+    }
   }
 };
 
@@ -988,6 +1065,9 @@ function demoData() {
   d.notes = [{ id: "n1", title: "Gift ideas", body: "Candle from that shop on 5th\nThe blue scarf", updated: Date.now() - 4e6, pinned: true }, { id: "n2", title: "Recipes to try", body: "Lemon orzo\nMiso soup", updated: Date.now() - 9e7 }];
   d.ui.note = "n1";
   d.journal[k(-1)] = { text: "Quiet day. Went for a long walk.", mood: "Good" };
+  const at = (n, hr, mi) => { const x = addDays(new Date(), n); x.setHours(hr, mi, 0, 0); return +x; };
+  d.fed[k(0)] = { morning: { by: "Christian", at: at(0, 8, 14) } };
+  for (let i = 1; i < 6; i++) d.fed[k(-i)] = { morning: { by: i % 2 ? "Justus" : "Christian", at: at(-i, 7, 40 + i) }, ...(i !== 3 ? { night: { by: i % 2 ? "Christian" : "Justus", at: at(-i, 20, 10 + i * 3) } } : {}) };
   return d;
 }
 
@@ -1017,19 +1097,25 @@ const Updates = (() => {
 const Lock = (() => {
   const AWAY = 5 * 60 * 1000;
   const el = $("#lock");
-  let mode = "enter", typed = "", first = "", from = null, hiddenAt = 0;
+  let mode = "enter", typed = "", first = "", from = null, hiddenAt = 0, who = "justus";
+  const slot = (w) => (w === "christian" ? "lock2" : "lock");
   const hex = (b) => [...new Uint8Array(b)].map((x) => x.toString(16).padStart(2, "0")).join("");
   async function hash(pin, salt) {
     const k = await crypto.subtle.importKey("raw", new TextEncoder().encode(pin), "PBKDF2", false, ["deriveBits"]);
     return hex(await crypto.subtle.deriveBits({ name: "PBKDF2", hash: "SHA-256", salt: new TextEncoder().encode(salt), iterations: 150000 }, k, 256));
   }
-  async function matches(pin) {
-    const [salt, h] = String(S.lock || "").split(":");
+  async function matches(pin, w = "justus") {
+    const [salt, h] = String(S[slot(w)] || "").split(":");
     return !!salt && (await hash(pin, salt)) === h;
   }
-  async function setPin(pin) {
+  // Whose PIN was typed: that decides which ShlimpNote opens (his ask, 2026-11-18).
+  async function whose(pin) {
+    for (const w of ["justus", "christian"]) if (await matches(pin, w)) return w;
+    return null;
+  }
+  async function setPin(pin, w) {
     const salt = hex(crypto.getRandomValues(new Uint8Array(16)));
-    S.lock = salt + ":" + (await hash(pin, salt));
+    S[slot(w)] = salt + ":" + (await hash(pin, salt));
     save(true);
   }
   const TEXT = {
@@ -1040,7 +1126,9 @@ const Lock = (() => {
     old: ["Your PIN now", "Type the PIN you use now, then pick a new one."],
   };
   function draw(msg = "") {
-    const [title, sub] = TEXT[mode];
+    let [title, sub] = TEXT[mode];
+    if (who !== profile && (mode === "make" || mode === "again")) title = mode === "make" ? `Make ${NAMES[who]}'s PIN` : "Type it again";
+    if (who !== profile && mode === "old") { title = "Type a PIN"; sub = `Your PIN or ${NAMES[who]}'s, then pick ${NAMES[who]}'s new one.`; }
     $("[data-title]", el).textContent = title;
     $("[data-sub]", el).textContent = msg || sub;
     $("[data-sub]", el).classList.toggle("warn", !!msg);
@@ -1048,10 +1136,11 @@ const Lock = (() => {
     $("[data-pad]", el).hidden = mode === "wait";
     $("[data-forgot]", el).hidden = mode !== "enter";
     $("[data-reset]", el).hidden = true;
+    $("[data-who]", el).hidden = true;
     $("[data-cancel]", el).hidden = !from;
   }
-  function show(m, back = null) {
-    mode = m; typed = ""; first = ""; from = back;
+  function show(m, back = null, w = profile) {
+    mode = m; typed = ""; first = ""; from = back; who = w;
     document.documentElement.classList.add("locked");
     if (document.activeElement && document.activeElement.blur) document.activeElement.blur();
     el.hidden = false;
@@ -1069,13 +1158,18 @@ const Lock = (() => {
   async function done() {
     const pin = typed; typed = "";
     if (mode === "enter") {
-      if (await matches(pin)) open(); else { wobble(); draw("That's not it — try again"); }
+      const w = await whose(pin);
+      if (w) { open(); if (w !== profile) setProfile(w); } else { wobble(); draw("That's not it — try again"); }
     } else if (mode === "old") {
-      if (await matches(pin)) { mode = "make"; draw(); } else { wobble(); draw("That's not it — try again"); }
+      if ((await matches(pin, who)) || (await matches(pin, profile))) { mode = "make"; draw(); } else { wobble(); draw("That's not it — try again"); }
     } else if (mode === "make") {
       first = pin; mode = "again"; draw();
     } else if (mode === "again") {
-      if (pin === first) { await setPin(pin); open(); }
+      if (pin === first) {
+        await setPin(pin, who);
+        const w = who, fresh = !from; open();
+        if (fresh && w !== profile) setProfile(w); // a new PIN made on the lock screen opens that person's ShlimpNote
+      }
       else { mode = "make"; first = ""; wobble(); draw("Those didn't match — pick 4 numbers again"); }
     }
   }
@@ -1089,11 +1183,12 @@ const Lock = (() => {
   el.addEventListener("click", (e) => {
     const b = e.target.closest("[data-k]"); if (b) return key(b.dataset.k);
     if (e.target.closest("[data-cancel]")) { const back = from; from = null; document.documentElement.classList.remove("locked"); el.hidden = true; go(back); return; }
+    const nw = e.target.closest("[data-new]"); if (nw) return show("make", null, nw.dataset.new);
     if (e.target.closest("[data-forgot]")) { $("[data-reset]", el).hidden = false; $("[data-forgot]", el).hidden = true; $("[data-reset] input", el).focus(); }
   });
   const reset = () => {
     const f = $("[data-reset] input", el), code = f.value.trim();
-    if (code && code === deviceKey()) { f.value = ""; show("make"); }
+    if (code && code === deviceKey()) { f.value = ""; $("[data-reset]", el).hidden = true; $("[data-who]", el).hidden = false; }
     else draw(deviceKey() ? "That's not this device's connect code" : "This device isn't connected — ask for a new connect code to make a new PIN");
   };
   $("[data-reset] button", el).addEventListener("click", reset);
@@ -1140,7 +1235,8 @@ const Lock = (() => {
     if (deviceKey() && navigator.onLine) await Promise.race([syncNow(), new Promise((r) => setTimeout(r, 8000))]);
     show(S.lock ? "enter" : "make");
   }
-  return { start, change: () => show("old", current) };
+  // Changing a PIN: ask for the old one first, unless that person has none yet.
+  return { start, change: (w = profile) => show(S[slot(w)] ? "old" : "make", current, w) };
 })();
 
 /* ---------------- Start ---------------- */

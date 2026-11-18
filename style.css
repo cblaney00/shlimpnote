@@ -938,3 +938,33 @@ html:not(.locked) #lock { display: none; }
 /* Daily was laggy (his note 2026-11-16): the many little time chips in "Things to tick" and the
    faded days (other months, future) stay still; they still squish when tapped. */
 .thing-times .chip, .daily-cal .day.out, .daily-cal .day.future { animation: none; rotate: none; }
+
+/* FatChat (his ask, 2026-11-18): feeding the cats. Warm caramel tone, nothing red. */
+:root { --apricot: #f0b97c; }
+.nav-cat { width: 26px; height: 20px; flex-shrink: 0; display: inline-flex; }
+.nav-cat svg { width: 100%; height: 100%; overflow: visible; }
+.card h2 .nav-cat { width: 34px; height: 26px; margin-right: 6px; vertical-align: middle; }
+.fat-card { display: flex; flex-direction: column; align-items: center; gap: 18px; }
+.fat-pic { width: min(340px, 86%); }
+.fat-pic svg { width: 100%; height: auto; display: block; overflow: visible; }
+.fat-pic .steam { animation: steam 3.2s ease-in-out infinite; transform-origin: 155px 40px; }
+@keyframes steam { 0%, 100% { opacity: .25; translate: 0 4px; } 50% { opacity: .8; translate: 0 -4px; } }
+.feed-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; width: 100%; max-width: 560px; }
+.btn.feed {
+  display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 20px 12px;
+  font-size: 1.35rem; font-weight: 800; color: #5a3a22;
+  background: var(--gloss), var(--grain), color-mix(in srgb, var(--apricot) 70%, #f7dcc0);
+}
+.btn.feed .feed-icon { font-size: 2.1rem; line-height: 1; }
+.btn.feed .feed-by { font-size: .9rem; font-weight: 600; opacity: .85; }
+.btn.feed.on { background: var(--gloss), var(--grain), #a8652e; color: #fff; text-shadow: 0 1px 1px rgba(60, 30, 10, .35); }
+.btn.feed.on .feed-by { opacity: 1; }
+.fed-past { display: flex; gap: 14px; flex-wrap: wrap; align-items: baseline; }
+.fed-past b { min-width: 110px; }
+@media (max-width: 760px) {
+  .feed-row { gap: 10px; }
+  .btn.feed { font-size: 1.15rem; padding: 16px 8px; }
+  .fat-pic .steam { animation: none; }
+}
+#ask-btn[hidden] { display: none; }
+.side-row.fed-past { display: flex; flex-direction: row; justify-content: flex-start; gap: 18px; padding: 10px 14px; }

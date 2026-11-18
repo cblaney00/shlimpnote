@@ -29,6 +29,18 @@ average cycle, dashed days = expected), **Notes** (list + search + pin, autosave
 **Chores** (checklist; a chore can repeat every day / every week and comes back by
 itself), **Work** (checklist), **Goals** (each goal is a box she ticks off — her ask 2026-11-13: "be able to click on [a goal] and have it check off the list ... should not be measured in percentage points, it should just be a box that can be checked off". No % or bars anywhere. Jelly tick before the title on the Goals page; on Today's Goals card tapping anywhere on the goal ticks it (`tickGoal`). Done = struck through, sinks to the bottom; `g.done`. Optional steps under a goal still work),
 **Journal** (one entry per day with a mood).
+**FatChat** (2026-11-18, his ask: "the schlimpnote that you open depends on the password that
+you type ... a profile but only for something to keep track of if we fed the cats and when";
+"it should be titled FatChat", "both of us", "two buttons, one for the morning and one for the
+night and they should update for eachother", names "Christian, Justus", picture "a cat about to
+put an entire cooked chicken in its mouth in one bite (the chicken is almost the same size as
+it)"). Two PINs: Justus's (`S.lock`) opens everything + FatChat; Christian's (`S.lock2`, made on
+her "Your devices" page) opens only FatChat + Your devices (no Ask for a change). Which person is
+in use: `profile`, sessionStorage `shlimpnote.profile`, never synced; `?demo&profile=christian`.
+Feedings in `S.fed[day] = {morning|night: {by, at}}`; tap again unticks; syncs 0.4 s after a tap
+and every 20 s while FatChat is open. Tone `--apricot` (caramel; ticked = deep `#a8652e`). Picture
+= `catChicken()` in `scene.js` (also the FatChat sidebar dot). Today has a FatChat card.
+"Forgot it?" lets her pick whose PIN to remake.
 
 **Ask for a change** (sidebar bottom, his ask): she types a request; it is sent to him
 as an issue in a private GitHub repo (see "How it is built"). Her past requests show with

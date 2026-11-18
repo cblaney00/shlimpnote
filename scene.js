@@ -292,3 +292,58 @@
   put("scene-top", top);
   put("scene-floor", floor);
 })();
+
+/* FatChat's picture (his ask, 2026-11-18): a fat cat about to eat a whole roast chicken
+   almost as big as itself, in one bite. Same round, fluffy style as the jungle animals.
+   Used on the FatChat page and, small, as its sidebar dot. */
+window.catChicken = (() => {
+  const PHONE = matchMedia("(max-width: 760px), (hover: none)").matches;
+  let n = 0;
+  return () => {
+    const i = "cc" + n++, f = PHONE ? "" : ' filter="url(#fur)"';
+    return `<svg class="cat-chicken" viewBox="0 0 210 150" aria-hidden="true">
+    <defs>
+      <radialGradient id="${i}f" cx=".35" cy=".3" r=".85"><stop offset="0" stop-color="#fff1dc"/><stop offset=".55" stop-color="#f3c48e"/><stop offset="1" stop-color="#c98c55"/></radialGradient>
+      <radialGradient id="${i}c" cx=".35" cy=".28" r=".85"><stop offset="0" stop-color="#ffe7a8"/><stop offset=".5" stop-color="#e8a24c"/><stop offset="1" stop-color="#a5602a"/></radialGradient>
+      <radialGradient id="${i}e" cx=".35" cy=".3" r=".8"><stop offset="0" stop-color="#5a4466"/><stop offset="1" stop-color="#2d2236"/></radialGradient>
+    </defs>
+    <ellipse cx="105" cy="140" rx="92" ry="8" fill="#8a5a3a" opacity=".18"/>
+    <!-- tail -->
+    <path d="M22 118 C -4 104, 6 70, 26 78" fill="none" stroke="#e3ab70" stroke-width="13" stroke-linecap="round"${f}/>
+    <!-- body and head -->
+    <ellipse cx="66" cy="104" rx="56" ry="38" fill="url(#${i}f)"${f}/>
+    <path d="M48 36 L52 8 L72 28 Z M86 28 L104 10 L106 40 Z" fill="#eab57c"${f}/>
+    <path d="M54 30 L55 17 L65 27 Z M90 28 L100 18 L101 34 Z" fill="#f6b8c6"/>
+    <circle cx="78" cy="58" r="36" fill="url(#${i}f)"${f}/>
+    <!-- tabby stripes -->
+    <path d="M70 26 q2 8 0 12 M80 24 q1 8 0 13 M90 27 q-1 7 -2 11" stroke="#c98c55" stroke-width="3.5" stroke-linecap="round" fill="none" opacity=".7"/>
+    <!-- big eyes looking at the chicken -->
+    <ellipse cx="66" cy="52" rx="9" ry="10.5" fill="url(#${i}e)"/><ellipse cx="90" cy="50" rx="8.5" ry="10" fill="url(#${i}e)"/>
+    <circle cx="69" cy="48" r="3.4" fill="#fff"/><circle cx="93" cy="46" r="3.2" fill="#fff"/>
+    <circle cx="64" cy="56" r="1.5" fill="#fff" opacity=".8"/><circle cx="88" cy="54" r="1.4" fill="#fff" opacity=".8"/>
+    <ellipse cx="56" cy="66" rx="7" ry="4" fill="#f6a9b9" opacity=".55"/>
+    <!-- mouth wide open -->
+    <path d="M86 66 Q114 58 116 74 Q114 96 90 88 Q82 78 86 66 Z" fill="#6b3b52"/>
+    <path d="M90 84 Q102 92 112 82 Q104 78 92 80 Z" fill="#f29bb1"/>
+    <path d="M92 67 l3 6 l3 -7 M106 64 l2 6 l3 -6" fill="#fff"/>
+    <path d="M80 66 l-3 -2 M48 62 h-14 M48 67 l-13 4 M108 58 l10 -5" stroke="#9c7258" stroke-width="1.4" stroke-linecap="round"/>
+    <!-- fat little paws holding the chicken -->
+    <ellipse cx="114" cy="112" rx="13" ry="10" fill="#f3c48e"${f}/>
+    <ellipse cx="102" cy="128" rx="13" ry="9" fill="#efbd86"${f}/>
+    <!-- the whole roast chicken, nearly cat-sized -->
+    <g>
+      <ellipse cx="190" cy="84" rx="9" ry="12" fill="url(#${i}c)"/>
+      <circle cx="202" cy="72" r="5.5" fill="#fff6e8"/><circle cx="203" cy="82" r="5" fill="#fff6e8"/>
+      <ellipse cx="190" cy="112" rx="9" ry="12" fill="url(#${i}c)"/>
+      <circle cx="202" cy="120" r="5.5" fill="#fff6e8"/><circle cx="203" cy="110" r="5" fill="#fff6e8"/>
+      <ellipse cx="152" cy="98" rx="44" ry="32" fill="url(#${i}c)"/>
+      <path d="M128 84 q22 -14 46 -4" stroke="#fff3cf" stroke-width="5" stroke-linecap="round" fill="none" opacity=".6"/>
+      <path d="M132 112 q20 8 40 0" stroke="#8a4d22" stroke-width="2.5" stroke-linecap="round" fill="none" opacity=".45"/>
+      <circle cx="140" cy="96" r="1.6" fill="#8a4d22" opacity=".5"/><circle cx="160" cy="104" r="1.6" fill="#8a4d22" opacity=".5"/><circle cx="168" cy="90" r="1.6" fill="#8a4d22" opacity=".5"/>
+    </g>
+    <ellipse cx="114" cy="112" rx="12" ry="9" fill="#f3c48e" opacity=".95"${f}/>
+    <!-- steam -->
+    <path class="steam" d="M146 58 q-6 -8 0 -16 q6 -8 0 -16 M164 60 q-6 -8 0 -16 q6 -8 0 -14" stroke="#fff" stroke-width="3" stroke-linecap="round" fill="none" opacity=".75"/>
+  </svg>`;
+  };
+})();
