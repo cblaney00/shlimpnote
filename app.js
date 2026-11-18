@@ -838,10 +838,11 @@ VIEWS.journal = (el) => {
    the very same thing, this device wins. `ui` (which page is open, etc.) is never synced. */
 const CFG = window.SHLIMP_CONFIG || {};
 const KEY_STORE = "shlimpnote.key", BASE_STORE = DEMO ? "shlimpnote.demo.base" : "shlimpnote.base";
-// A code pasted on this device wins; otherwise the built-in one (his ask 2026-11-18: sync by itself).
+// The built-in key wins (his ask 2026-11-18: sync by itself); a code pasted on this device is only a fallback,
+// so an old or wrong pasted code can never stop a device syncing.
 const BUILTIN_KEY = (() => { try { const k = (window.SHLIMP_CONFIG || {}).key; return k ? atob(k).split("").reverse().join("") : ""; } catch (e) { return ""; } })();
 // ?demo never touches her data.
-const deviceKey = () => { if (DEMO) return ""; let k = ""; try { k = localStorage.getItem(KEY_STORE) || ""; } catch (e) {} return k || BUILTIN_KEY; };
+const deviceKey = () => { if (DEMO) return ""; let k = ""; try { k = localStorage.getItem(KEY_STORE) || ""; } catch (e) {} return BUILTIN_KEY || k; };
 const gh = (path, opts = {}) => fetch(`https://api.github.com/repos/${CFG.repo}${path}`, {
   cache: "no-store", ...opts,
   headers: { Authorization: "Bearer " + deviceKey(), Accept: "application/vnd.github+json", ...(opts.headers || {}) },
