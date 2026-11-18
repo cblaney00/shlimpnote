@@ -205,6 +205,7 @@ Ask him before changing the look.
   string so the merge can't mix two PINs); the PIN itself is never stored. A device with no
   PIN waits for its first sync (up to 8 s) before asking her to make one. Tested against the real repo 2026-11-10 (node harness, test file
   removed afterwards).
+- **Built-in key (2026-11-18, his ask: "can we just have them automatically sync? it doesnt really need to be secure"; told it would be public, said "i allow it")**: `config.js` `key` = a fine-grained token "ShlimpNote auto" (Contents + Issues on shlimpnote-data only, no expiry), base64 of the reversed string. `deviceKey()` uses a pasted code first, else this one, so every device syncs by itself; `?demo` never gets a key. A device's first sync (no base) lets GitHub win where they disagree. The older pasted-code flow below still works.
 - **Connect code** = a fine-grained GitHub token (Contents + Issues read/write on
   shlimpnote-data only) that **he** makes on github.com; it is stored only on her devices
   (`localStorage` `shlimpnote.key`), entered on the "Your devices" page (tap the line under
@@ -217,9 +218,7 @@ Ask him before changing the look.
   script, pictures embedded). Regenerate it if installing/connecting changes.
 - Files: `index.html` (shell), `style.css` (all looks), `scene.js` (the jungle and creatures, SVG), `app.js` (everything else: store,
   pages as `VIEWS.<page>`, checklist/edit/undo helpers, change requests),
-  `config.js` (`repo` + `key` for change requests: a fine-grained GitHub token that can
-  only write issues in that one private repo, stored base64 of the reversed string so
-  it isn't a plain token in the code), `sw.js`, `manifest.webmanifest`, `icons/`
+  `config.js` (`repo` + the built-in `key`, see above), `sw.js`, `manifest.webmanifest`, `icons/`
   (shrimp icon; PNGs made from the SVG with `magick`).
 - If a new file is added, add it to `FILES` in `sw.js` so it works offline.
 - `?demo` uses made-up data in a separate storage key (`shlimpnote.demo`); `?page=meds`

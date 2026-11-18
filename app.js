@@ -838,7 +838,10 @@ VIEWS.journal = (el) => {
    the very same thing, this device wins. `ui` (which page is open, etc.) is never synced. */
 const CFG = window.SHLIMP_CONFIG || {};
 const KEY_STORE = "shlimpnote.key", BASE_STORE = DEMO ? "shlimpnote.demo.base" : "shlimpnote.base";
-const deviceKey = () => { try { return localStorage.getItem(KEY_STORE) || ""; } catch (e) { return ""; } };
+// A code pasted on this device wins; otherwise the built-in one (his ask 2026-11-18: sync by itself).
+const BUILTIN_KEY = (() => { try { const k = (window.SHLIMP_CONFIG || {}).key; return k ? atob(k).split("").reverse().join("") : ""; } catch (e) { return ""; } })();
+// ?demo never touches her data.
+const deviceKey = () => { if (DEMO) return ""; let k = ""; try { k = localStorage.getItem(KEY_STORE) || ""; } catch (e) {} return k || BUILTIN_KEY; };
 const gh = (path, opts = {}) => fetch(`https://api.github.com/repos/${CFG.repo}${path}`, {
   cache: "no-store", ...opts,
   headers: { Authorization: "Bearer " + deviceKey(), Accept: "application/vnd.github+json", ...(opts.headers || {}) },
@@ -892,7 +895,9 @@ async function syncNow() {
     const mine = shareable();
     let base = null;
     try { base = JSON.parse(localStorage.getItem(BASE_STORE) || "null"); } catch (e) { /* none yet */ }
-    const merged = remote ? merge3(base || {}, mine, remote) : mine;
+    // First sync on this device (no base yet): GitHub wins where they disagree, so a device that
+    // was never connected can't overwrite her PINs/settings (lists and days still combine).
+    const merged = !remote ? mine : base ? merge3(base, mine, remote) : merge3({}, remote, mine);
     if (!same(merged, mine)) {
       // New things from her other device. Never swap data out from under a box she's typing in.
       const a = document.activeElement;
