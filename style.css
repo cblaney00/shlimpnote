@@ -968,3 +968,5 @@ html:not(.locked) #lock { display: none; }
 }
 #ask-btn[hidden] { display: none; }
 .side-row.fed-past { display: flex; flex-direction: row; justify-content: flex-start; gap: 18px; padding: 10px 14px; }
+.who-pick { justify-content: center; gap: 14px; margin: 10px 0 4px; }
+.who-pick .btn { font-size: 1.2rem; padding: 14px 26px; }

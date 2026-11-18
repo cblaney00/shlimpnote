@@ -40,7 +40,14 @@ in use: `profile`, sessionStorage `shlimpnote.profile`, never synced; `?demo&pro
 Feedings in `S.fed[day] = {morning|night: {by, at}}`; tap again unticks; syncs 0.4 s after a tap
 and every 20 s while FatChat is open. Tone `--apricot` (caramel; ticked = deep `#a8652e`). Picture
 = `catChicken()` in `scene.js` (also the FatChat sidebar dot). Today has a FatChat card.
-"Forgot it?" lets her pick whose PIN to remake.
+"Forgot it?" lets her pick whose PIN to remake. 2026-11-18, his ask: "when a new device gets ShlimpNote it should ask who you are and then
+for your pin, if its a new name then it will prompt you to make a pin" (no other people for now):
+a device that has never had a PIN shows **"Who are you?"** (Justus / Christian); the device remembers
+(`localStorage` `shlimpnote.who`), then "Hi <name>! Enter your PIN", or "Make a PIN" if that person has
+none. "Not you?" goes back to the picker. Any known PIN still opens its own person's ShlimpNote.
+Christian's PIN was set to his pick straight into data.json (hers was a different one). His
+note "that first mark was done by me": `fixFirstMarks` turns every FatChat mark from before
+this release that says Justus into Christian.
 
 **Ask for a change** (sidebar bottom, his ask): she types a request; it is sent to him
 as an issue in a private GitHub repo (see "How it is built"). Her past requests show with

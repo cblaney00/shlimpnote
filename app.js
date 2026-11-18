@@ -349,7 +349,13 @@ function dailyRows(k) {
 }
 // Shower and teeth are added once (synced flag; fixed ids so two devices can't double them).
 // Called after the first sync, so a removal on her other device isn't undone here.
+// His note (2026-11-18): the first FatChat marks, made on his computer before it knew who
+// was who, were him. Any mark from before then that says Justus becomes Christian.
+function fixFirstMarks() {
+  for (const day of Object.values(S.fed || {})) for (const f of Object.values(day)) if (f && f.by === "Justus" && f.at < 1794993457000) { f.by = "Christian"; save(); }
+}
 function seedDaily() {
+  fixFirstMarks();
   if (S.dailySeeded) return;
   const add = [{ id: "h-shower", name: "Shower", dose: "", times: ["Once"] }, { id: "h-teeth", name: "Brush teeth", dose: "", times: ["Morning", "Bedtime"] }];
   S.meds.unshift(...add.filter((a) => !S.meds.some((m) => m.id === a.id)));
@@ -1120,6 +1126,7 @@ const Lock = (() => {
   }
   const TEXT = {
     wait: ["Getting ready…", ""],
+    who: ["Who are you?", "Pick your name, then type your PIN."],
     enter: ["Enter your PIN", ""],
     make: ["Make a PIN", "Pick 4 numbers. You'll type them each time you open ShlimpNote, on your phone and computer."],
     again: ["Type it again", "Just to be sure."],
@@ -1128,6 +1135,7 @@ const Lock = (() => {
   function draw(msg = "") {
     let [title, sub] = TEXT[mode];
     if (who !== profile && (mode === "make" || mode === "again")) title = mode === "make" ? `Make ${NAMES[who]}'s PIN` : "Type it again";
+    if (mode === "enter" && known() === who && NAMES[who]) title = `Hi ${NAMES[who]}! Enter your PIN`;
     if (who !== profile && mode === "old") { title = "Type a PIN"; sub = `Your PIN or ${NAMES[who]}'s, then pick ${NAMES[who]}'s new one.`; }
     $("[data-title]", el).textContent = title;
     $("[data-sub]", el).textContent = msg || sub;
@@ -1135,6 +1143,10 @@ const Lock = (() => {
     el.querySelectorAll(".pin-dot").forEach((d, i) => d.classList.toggle("on", i < typed.length));
     $("[data-pad]", el).hidden = mode === "wait";
     $("[data-forgot]", el).hidden = mode !== "enter";
+    $("[data-pick]", el).hidden = mode !== "who";
+    $("[data-notyou]", el).hidden = mode !== "enter";
+    $(".pin-dots", el).hidden = mode === "who";
+    if (mode === "who") $("[data-pad]", el).hidden = true;
     $("[data-reset]", el).hidden = true;
     $("[data-who]", el).hidden = true;
     $("[data-cancel]", el).hidden = !from;
@@ -1159,7 +1171,7 @@ const Lock = (() => {
     const pin = typed; typed = "";
     if (mode === "enter") {
       const w = await whose(pin);
-      if (w) { open(); if (w !== profile) setProfile(w); } else { wobble(); draw("That's not it — try again"); }
+      if (w) { remember(w); open(); if (w !== profile) setProfile(w); } else { wobble(); draw("That's not it — try again"); }
     } else if (mode === "old") {
       if ((await matches(pin, who)) || (await matches(pin, profile))) { mode = "make"; draw(); } else { wobble(); draw("That's not it — try again"); }
     } else if (mode === "make") {
@@ -1167,7 +1179,7 @@ const Lock = (() => {
     } else if (mode === "again") {
       if (pin === first) {
         await setPin(pin, who);
-        const w = who, fresh = !from; open();
+        const w = who, fresh = !from; if (fresh) remember(w); open();
         if (fresh && w !== profile) setProfile(w); // a new PIN made on the lock screen opens that person's ShlimpNote
       }
       else { mode = "make"; first = ""; wobble(); draw("Those didn't match — pick 4 numbers again"); }
@@ -1183,6 +1195,8 @@ const Lock = (() => {
   el.addEventListener("click", (e) => {
     const b = e.target.closest("[data-k]"); if (b) return key(b.dataset.k);
     if (e.target.closest("[data-cancel]")) { const back = from; from = null; document.documentElement.classList.remove("locked"); el.hidden = true; go(back); return; }
+    const pk = e.target.closest("[data-who-is]"); if (pk) return picked(pk.dataset.whoIs);
+    if (e.target.closest("[data-notyou]")) return show("who");
     const nw = e.target.closest("[data-new]"); if (nw) return show("make", null, nw.dataset.new);
     if (e.target.closest("[data-forgot]")) { $("[data-reset]", el).hidden = false; $("[data-forgot]", el).hidden = true; $("[data-reset] input", el).focus(); }
   });
@@ -1224,16 +1238,29 @@ const Lock = (() => {
     location.reload();
   }
   setInterval(quietUpdate, 10 * 60 * 1000);
+  // His ask (2026-11-18): a new device first asks who you are, then for that person's PIN —
+  // or, if that person has no PIN yet, has them make one. The device remembers who it is.
+  const WHO = "shlimpnote.who";
+  const remember = (w) => { try { localStorage.setItem(WHO, w); } catch (e) { /* asks again next time */ } };
+  const known = () => { try { return localStorage.getItem(WHO); } catch (e) { return null; } };
+  async function picked(w) {
+    remember(w);
+    if (!S[slot(w)] && deviceKey() && navigator.onLine) {
+      show("wait", null, w); // their PIN may be on another device
+      await Promise.race([syncNow(), new Promise((r) => setTimeout(r, 8000))]);
+    }
+    if (w !== profile) setProfile(w);
+    show(S[slot(w)] ? "enter" : "make", null, w);
+  }
   async function start() {
     if (DEMO) { document.documentElement.classList.remove("locked"); return; }
     let resumed = 0;
     try { resumed = +sessionStorage.getItem(RESUME) || 0; sessionStorage.removeItem(RESUME); } catch (e) { /* none */ }
     if (S.lock && Date.now() - resumed < 15000) { document.documentElement.classList.remove("locked"); el.hidden = true; return; }
-    if (S.lock) return show("enter");
-    // No PIN here yet: if this device is connected, her other device may already have one.
-    show("wait");
-    if (deviceKey() && navigator.onLine) await Promise.race([syncNow(), new Promise((r) => setTimeout(r, 8000))]);
-    show(S.lock ? "enter" : "make");
+    const w = known() || (S.lock ? profile : null); // a device that already had a PIN skips "Who are you?"
+    if (!w) return show("who");
+    if (S[slot(w)]) return show("enter", null, w);
+    picked(w);
   }
   // Changing a PIN: ask for the old one first, unless that person has none yet.
   return { start, change: (w = profile) => show(S[slot(w)] ? "old" : "make", current, w) };
